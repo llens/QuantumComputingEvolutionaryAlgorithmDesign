@@ -31,7 +31,9 @@ if __name__ == "__main__":
         targets[i, :] = invert_targets(input_set[i, :])
         targets[i, :] /= sum(targets[i, :])
 
-    evolve_algorithm(input_set, targets)
+    gates = ["q1", "q2"]
+
+    evolve_algorithm(input_set, targets, gates)
 
 
 

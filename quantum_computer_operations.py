@@ -26,23 +26,6 @@ def quantum_gate_switch(quantum_computer, gates, array_value, index):
     return quantum_computer
 
 
-def quantum_gate_output_switch(quantum_computer, gates, array_value, index):
-    if array_value == 0:
-        print '|'
-    elif array_value == 1:
-        print 'T'
-    elif array_value == 2:
-        print 'H'
-    elif array_value == 3:
-        if index < len(gates):
-            print '. - (+)'
-    elif array_value == 4:
-        if index > 0:
-            print '(+) - .'
-
-    return quantum_computer
-
-
 def apply_quantum_gates(quantum_computer, gates, gate_array):
     gate_array = cnot_two_gate_operation(gate_array)
 
@@ -51,6 +34,39 @@ def apply_quantum_gates(quantum_computer, gates, gate_array):
             quantum_computer = quantum_gate_switch(quantum_computer, gates, gate_array[k][i], i)
 
     return quantum_computer
+
+
+def quantum_gate_output_switch(gates, array_value, index):
+    if array_value == 0:
+        output_string = '|'
+    elif array_value == 1:
+        output_string = 'T'
+    elif array_value == 2:
+        output_string = 'H'
+    elif array_value == 3:
+        if index < len(gates):
+            output_string = '. - (+)'
+    elif array_value == 4:
+        if index > 0:
+            output_string = '(+) - .'
+
+    return output_string
+
+
+def output_quantum_gates(gates, gate_array):
+    for k in range(len(gate_array)):
+        output_string = ''
+        i = 0
+
+        while i < len(gate_array[k]):
+            if gate_array[k][i] < 3:
+                output_string += '    ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                i += 1
+            else:
+                output_string += '    ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                i += 2
+
+        print output_string
 
 
 def cnot_two_gate_operation(gate_array):
@@ -73,9 +89,7 @@ def cnot_two_gate_operation(gate_array):
     return gate_array
 
 
-def run_quantum_algorithm(input_state, gate_array):
-    gates = ["q1", "q2"]
-
+def run_quantum_algorithm(input_state, gates, gate_array):
     quantum_computer = initialise_quantum_computer(input_state)
 
     quantum_computer = apply_quantum_gates(quantum_computer, gates, gate_array)
@@ -108,11 +122,11 @@ def measure_quantum_output(quantum_computer, gates):
     return probability
 
 
-def run_quantum_algorithm_over_set(input_set, target_set, gate_array):
+def run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array):
     probabilities = np.zeros((len(input_set), 4))
 
     for i in range(len(input_set)):
-        probabilities[i, :] = run_quantum_algorithm(input_set[i, :], gate_array)
+        probabilities[i, :] = run_quantum_algorithm(input_set[i, :], gates, gate_array)
 
     return - np.sum((probabilities - target_set) ** 2),
 
