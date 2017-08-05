@@ -185,13 +185,13 @@ class State(object):
 	def state_from_string(qubit_state_string):
 		if not all(x in '01' for x in qubit_state_string):
 			raise Exception("Description must be a string in binary")
-		state=float('NaN')
+		state=None
 		for qubit in qubit_state_string:
 			if qubit=='0':
 				new_contrib=State.zero_state
 			elif qubit=='1':
 				new_contrib=State.one_state
-			if state==float('NaN'):
+			if state==None:
 				state=new_contrib
 			else:
 				state=np.kron(state,new_contrib)

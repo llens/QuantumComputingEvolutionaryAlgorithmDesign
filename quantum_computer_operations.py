@@ -1,4 +1,4 @@
-from QuantumComputerModified import QuantumComputer, Gate, Probability, State
+from QuantumComputer import QuantumComputer, Gate, Probability
 import numpy as np
 
 #TEST
@@ -106,8 +106,17 @@ def initialise_quantum_computer(input_state):
     if input_state[3] == 1:
         quantum_computer.apply_gate(Gate.X, "q2")
 
+    if input_state[5] == 1:
+        quantum_computer.apply_gate(Gate.X, "q3")
+
     quantum_computer.apply_two_qubit_gate_CNOT("q1", "q2")
     quantum_computer.apply_two_qubit_gate_CNOT("q1", "q2")
+
+    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q3")
+    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q3")
+
+    quantum_computer.apply_two_qubit_gate_CNOT("q2", "q3")
+    quantum_computer.apply_two_qubit_gate_CNOT("q2", "q3")
 
     return quantum_computer
 
@@ -119,11 +128,23 @@ def measure_quantum_output(quantum_computer, gates):
     while len(probability) != 2 * len(gates):
         probability = np.concatenate((probability, Probability.get_probabilities(state)))
 
+        if  2 * len(gates) < len(probability):
+            print probability
+            print len(probability)
+            print len(gates)
+            Probability.pretty_print_probabilities(
+        quantum_computer.qubits.get_quantum_register_containing("q1").get_state())
+            Probability.pretty_print_probabilities(
+        quantum_computer.qubits.get_quantum_register_containing("q2").get_state())
+            Probability.pretty_print_probabilities(
+        quantum_computer.qubits.get_quantum_register_containing("q3").get_state())
+            time.sleep(5)
+
     return probability
 
 
 def run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array):
-    probabilities = np.zeros((len(input_set), 4))
+    probabilities = np.zeros((len(input_set), 2 * len(gates)))
 
     for i in range(len(input_set)):
         probabilities[i, :] = run_quantum_algorithm(input_set[i, :], gates, gate_array)

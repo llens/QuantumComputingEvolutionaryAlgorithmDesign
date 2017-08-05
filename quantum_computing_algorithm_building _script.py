@@ -1,4 +1,4 @@
-from QuantumComputerModified import QuantumComputer, Gate, Probability
+from QuantumComputer import Probability
 from evolutionary_algorithm import evolve_algorithm
 from quantum_computer_operations import invert_targets
 import numpy as np
@@ -22,8 +22,8 @@ def underlined_output(string):
 
 if __name__ == "__main__":
     #Sum of probabilities exceeds ones as not yet entangled.
-    input_set = np.asarray([[0, 1, 1, 0],
-                            [1, 0, 0, 1]])
+    input_set = np.asarray([[1, 0, 1, 0, 1, 0],
+                            [0, 1, 0, 1, 0, 1]])
 
     targets = np.zeros(input_set.shape)
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         targets[i, :] = invert_targets(input_set[i, :])
         targets[i, :] /= sum(targets[i, :])
 
-    gates = ["q1", "q2"]
+    gates = ["q1", "q2", "q3"]
 
     evolve_algorithm(input_set, targets, gates)
 
