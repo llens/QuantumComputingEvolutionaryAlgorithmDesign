@@ -1,9 +1,6 @@
 from QuantumComputer import QuantumComputer, Gate, Probability
 import numpy as np
 
-#TEST
-import time
-
 # Quantum Gate to Number Map:
 # Identity: 0
 # T: 1
@@ -109,52 +106,45 @@ def initialise_quantum_computer(input_state):
     if input_state[5] == 1:
         quantum_computer.apply_gate(Gate.X, "q3")
 
-    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q2")
-    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q2")
-
-    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q3")
-    quantum_computer.apply_two_qubit_gate_CNOT("q1", "q3")
-
-    quantum_computer.apply_two_qubit_gate_CNOT("q2", "q3")
-    quantum_computer.apply_two_qubit_gate_CNOT("q2", "q3")
-
     return quantum_computer
 
 
 def measure_quantum_output(quantum_computer, gates):
     state = quantum_computer.qubits.get_quantum_register_containing(gates[0]).get_state()
-    probability = []
+    probability = Probability.get_probabilities(state)
 
-    while len(probability) != 2 * len(gates):
-        probability = np.concatenate((probability, Probability.get_probabilities(state)))
-
-        if  2 * len(gates) < len(probability):
-            print probability
-            print len(probability)
-            print len(gates)
-            Probability.pretty_print_probabilities(
-        quantum_computer.qubits.get_quantum_register_containing("q1").get_state())
-            Probability.pretty_print_probabilities(
-        quantum_computer.qubits.get_quantum_register_containing("q2").get_state())
-            Probability.pretty_print_probabilities(
-        quantum_computer.qubits.get_quantum_register_containing("q3").get_state())
-            time.sleep(5)
+    #Remove any solutions that are not fully entangled due to input/ output requirements.
+    if len(probability) != 2 ** len(gates):
+        probability = np.empty((2 ** len(gates),)) * np.nan
 
     return probability
 
 
 def run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array):
-    probabilities = np.zeros((len(input_set), 2 * len(gates)))
+    probabilities = np.zeros((len(input_set), 2 ** len(gates)))
 
     for i in range(len(input_set)):
         probabilities[i, :] = run_quantum_algorithm(input_set[i, :], gates, gate_array)
 
-    return - np.sum((probabilities - target_set) ** 2),
+    score = - 1 - np.sum((probabilities - target_set) ** 2) / (2 ** len(gates))
+
+    if np.isnan(score) :
+        score = -2
+
+    if score == -1:
+        score /= (1 + count_blank_rows(gate_array))
+
+    return score,
+
+
+def count_blank_rows(gate_array):
+    blank_counter = 0
+    for row in gate_array:
+        if sum(row) == 0:
+            blank_counter += 1
+
+    return blank_counter
 
 
 def invert_targets(input_arr):
     return np.mod(input_arr + np.ones(input_arr.shape), 2)
-
-
-
-

@@ -8,19 +8,17 @@ from quantum_computer_operations import run_quantum_algorithm_over_set, cnot_two
 
 
 def evolve_algorithm(input_set, target_set, gates):
-    individual_vector_length = 6
-
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", array.array, typecode='b', fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
 
-    #pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool()
 
-    #toolbox.register("map", pool.map)
-    toolbox.register("attr_bool", random.randint, 0, individual_vector_length)
+    toolbox.register("map", pool.map)
+    toolbox.register("attr_bool", random.randint, 0, 4)
 
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, individual_vector_length)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 60)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register("evaluate", evaluate_quantum_algorithm, input_set=input_set, target_set=target_set, gates=gates)
@@ -36,7 +34,7 @@ def evolve_algorithm(input_set, target_set, gates):
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=20,
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=30,
                                    stats=stats, halloffame=hof, verbose=True)
 
     print 'Best individual:'
@@ -52,5 +50,3 @@ def dna_to_gates(individual, gates):
     gate_array = cnot_two_gate_operation(gate_array)
 
     return cnot_two_gate_operation(gate_array)
-
-
