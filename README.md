@@ -7,10 +7,10 @@ Uses evolutionary algorithms and python-quintuple to automatically design quantu
 The algorithm maps the complete set of quantum gates T, Hadamard, CNOT, and their relative positions as a simple 'DNA', a generation of multiple random quantum algorithm 'DNA' are generated and compared to the desired output quantum state, the best members of this generation are bred (cut and joined together) and mutated (random 'DNA' changes) to create the next generation which is again evaluated.
 
 Example of a 5-qbit algorithm 'DNA'
-    |    T    . - (+)    |
-    |    |    |    H    T
-    |    T    |    |    T
-    H    |    |    H    |
+    |    T    . - (+)    | 
+    |    |    |    H     T
+    |    T    |    |     T
+    H    |    |    H     |
     . - (+)    T    T    H
     . - (+)    T    T    |
     |    |    T    . - (+)
