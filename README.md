@@ -14,7 +14,11 @@ H: Hadamard
 .- (+): CNOT  
 
 # Inputs and Targets
-The required inputs and outputs for an algorithm are supplied as a series of probabilities, for instance a 2 qbit inversion gate could have the following inputs [[0, 0], [0, 1], [1, 0], [1, 1]] and following outputs [[1, 1], [1, 0], [0, 1], [0, 0]].
+The required inputs and outputs for an algorithm are supplied as a series of probabilities, for instance a 2 qbit inversion gate could have the following inputs [[0, 0], [0, 1], [1, 0], [1, 1]] and following outputs [[1, 1], [1, 0], [0, 1], [0, 0]]. 
+
+# Scoring 
+Score = (-1 - mean square error) / (1 + number of blank rows)  
+Scoring is based on the absolute difference from the target probability and output probability of generated individual, divided by the number of possible eigenstates, this is then divided by the number of blank rows to promote simple algorithms. Python DEAP aims to minimise a negative score.
 
 # To Do.
 Implement more algorithm examples and working case studies.
