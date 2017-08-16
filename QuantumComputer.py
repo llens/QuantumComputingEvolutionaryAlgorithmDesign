@@ -41,7 +41,7 @@ class Gate(object):
 	# CNOT Gate (control is qubit 0, target qubit 1), this is the default CNOT gate
 	CNOT2_01=np.matrix('1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0')
 	# control is qubit 1 target is qubit 0 
-	CNOT2_10=np.kron(H,H)*CNOT2_01*np.kron(H,H) #=np.matrix('1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0') 
+	CNOT2_10=np.kron(H,H)*CNOT2_01*np.kron(H,H)
 
 	# operates on 2 out of 3 entangled qubits, control is first subscript, target second
 	CNOT3_01=np.kron(CNOT2_01,eye)
