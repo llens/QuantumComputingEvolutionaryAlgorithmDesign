@@ -11,7 +11,7 @@ Example of a 5-qbit algorithm 'DNA'
 Gate symbol key:  
 T: T  
 H: Hadamard  
-CNOT: .- (+)  
+.- (+): CNOT  
 
 # Inputs and Targets
 The required inputs and outputs for an algorithm are supplied as a series of probabilities, for instance a 2 qbit inversion gate could have the following inputs [[0, 0], [0, 1], [1, 0], [1, 1]] and following outputs [[1, 1], [1, 0], [0, 1], [0, 0]].
