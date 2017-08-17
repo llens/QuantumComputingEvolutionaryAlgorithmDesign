@@ -11,7 +11,7 @@ Example of a 5-qbit algorithm 'DNA'
 Gate symbol key:  
 T: T  
 H: Hadamard  
-.- (+): CNOT
+.- (+): CNOT  
 I: Identity (Blank)
 
 # Inputs and Targets
