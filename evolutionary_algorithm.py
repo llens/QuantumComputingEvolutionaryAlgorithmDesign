@@ -34,7 +34,7 @@ def evolve_algorithm(input_set, target_set, gates):
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=50,
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=20,
                                    stats=stats, halloffame=hof, verbose=True)
 
     print 'Best individual:'

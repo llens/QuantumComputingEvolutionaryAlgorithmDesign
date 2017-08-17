@@ -41,11 +41,9 @@ def quantum_gate_output_switch(gates, array_value, index):
     elif array_value == 2:
         output_string = 'H'
     elif array_value == 3:
-        if index < len(gates):
-            output_string = '. - (+)'
+        output_string = '. - (+)'
     elif array_value == 4:
-        if index > 0:
-            output_string = '(+) - .'
+        output_string = '(+) - .'
 
     return output_string
 
@@ -57,10 +55,10 @@ def output_quantum_gates(gates, gate_array):
 
         while i < len(gate_array[k]):
             if gate_array[k][i] < 3:
-                output_string += '    ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                output_string += '     ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
                 i += 1
             else:
-                output_string += '    ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                output_string += '     ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
                 i += 2
 
         print output_string
@@ -79,8 +77,9 @@ def cnot_two_gate_operation(gate_array):
     for k in range(len(gate_array)):
         for i in range(row_length):
             if gate_array[k][i] == 4:
-                if i < 0:
-                    gate_array[k][i - 1] = 0
+                if i > 0:
+                    gate_array[k][i - 1] = 4
+                    gate_array[k][i] = 0
                 else:
                     gate_array[k][i] = 0
     return gate_array
