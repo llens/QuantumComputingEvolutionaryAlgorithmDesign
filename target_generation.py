@@ -33,9 +33,8 @@ def discrete_inputs(gates, n_inputs):
 def discrete_input(gates):
     i = 0
     inputs = []
-    while i < (2 ** len(gates)) / 2:
-        temp = np.hstack((discrete_qbit(), discrete_qbit()))
-        inputs.append(temp)
+    while i < (2 ** len(gates) / 2):
+        inputs = np.hstack((inputs, discrete_qbit()))
         i += 1
 
     return inputs
