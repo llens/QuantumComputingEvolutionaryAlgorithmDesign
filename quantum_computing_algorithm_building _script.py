@@ -1,6 +1,6 @@
 from QuantumComputer import Probability
 from evolutionary_algorithm import evolve_algorithm
-from quantum_computer_operations import invert_targets
+from target_generation import one_over_targets, flip_targets, continuous_inputs, discrete_inputs
 import numpy as np
 
 
@@ -14,17 +14,26 @@ def underlined_output(string):
     print '----------------------'
 
 if __name__ == "__main__":
+    example = 'flip'
+    gates = ["q0", "q1"]#, "q2", "q3"]#, "q4"]
+    input_size = 10
+
     #Sum of probabilities exceeds ones as not yet entangled.
-    input_set = np.asarray([[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,],
-                            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,],
-                            np.random.randint(0, 1, 2 ** 5)])
+    if example == 'flip':
+        input_set = discrete_inputs(gates, input_size)
+    elif example == 'inverse':
+        input_set = continuous_inputs(gates, input_size)
 
     targets = np.zeros(input_set.shape)
 
     for i in range(len(input_set)):
-        targets[i, :] = invert_targets(input_set[i, :])
-        targets[i, :] /= sum(targets[i, :])
+        if example == 'flip':
+            targets[i, :] = flip_targets(input_set[i, :])
+        elif example == 'inverse':
+            targets[i, :] = one_over_targets(input_set[i, :])
 
-    gates = ["q0", "q1", "q2", "q3", "q4"]
+        temp_sum = sum(targets[i, :])
+        if temp_sum != 0:
+            targets[i, :] /= temp_sum
 
     evolve_algorithm(input_set, targets, gates)

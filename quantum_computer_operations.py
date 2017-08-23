@@ -24,7 +24,7 @@ def quantum_gate_switch(quantum_computer, gates, array_value, index):
 
 
 def apply_quantum_gates(quantum_computer, gates, gate_array):
-    gate_array = cnot_two_gate_operation(gate_array)
+    gate_array = remove_redundant_gate_series(cnot_two_gate_operation(gate_array))
 
     for k in range(len(gate_array)):
         for i in range(len(gate_array[k])):
@@ -33,7 +33,7 @@ def apply_quantum_gates(quantum_computer, gates, gate_array):
     return quantum_computer
 
 
-def quantum_gate_output_switch(gates, array_value, index):
+def quantum_gate_output_switch(array_value):
     if array_value == 0:
         output_string = '|'
     elif array_value == 1:
@@ -48,17 +48,33 @@ def quantum_gate_output_switch(gates, array_value, index):
     return output_string
 
 
-def output_quantum_gates(gates, gate_array):
+def remove_redundant_gate_series(gate_array):
+    col_length = len(gate_array)
+    for k in range(col_length):
+        for i in range(len(gate_array[1])):
+            if gate_array[k][i] == 2 or  gate_array[k][i] == 3 or gate_array[k][i] == 4:
+                if k > 0 and gate_array[k][i] == gate_array[k - 1][i]:
+                    gate_array[k][i] = 0
+                    gate_array[k - 1][i] = 0
+
+                if k < (col_length - 1) and gate_array[k][i] == gate_array[k + 1][i]:
+                    gate_array[k][i] = 0
+                    gate_array[k + 1][i] = 0
+
+    return gate_array
+
+
+def output_quantum_gates(gate_array):
     for k in range(len(gate_array)):
         output_string = ''
         i = 0
 
         while i < len(gate_array[k]):
             if gate_array[k][i] < 3:
-                output_string += '     ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                output_string += '     ' + quantum_gate_output_switch(gate_array[k][i])
                 i += 1
             else:
-                output_string += '     ' + quantum_gate_output_switch(gates, gate_array[k][i], i)
+                output_string += '     ' + quantum_gate_output_switch(gate_array[k][i])
                 i += 2
 
         print output_string
@@ -86,24 +102,32 @@ def cnot_two_gate_operation(gate_array):
 
 
 def run_quantum_algorithm(input_state, gates, gate_array):
-    quantum_computer = initialise_quantum_computer(input_state)
+    quantum_computer = initialise_quantum_computer(input_state, gates)
 
     quantum_computer = apply_quantum_gates(quantum_computer, gates, gate_array)
 
     return measure_quantum_output(quantum_computer, gates)
 
 
-def initialise_quantum_computer(input_state):
+def initialise_quantum_computer(input_state, gates):
     quantum_computer = QuantumComputer()
 
+    gate_length = len(gates)
+
     if input_state[1] == 1:
+        quantum_computer.apply_gate(Gate.X, "q0")
+
+    if gate_length > 1 and input_state[3] == 1:
         quantum_computer.apply_gate(Gate.X, "q1")
 
-    if input_state[3] == 1:
+    if gate_length > 2 and input_state[5] == 1:
         quantum_computer.apply_gate(Gate.X, "q2")
 
-    if input_state[5] == 1:
+    if gate_length > 3 and input_state[7] == 1:
         quantum_computer.apply_gate(Gate.X, "q3")
+
+    if gate_length > 4 and input_state[9] == 1:
+        quantum_computer.apply_gate(Gate.X, "q4")
 
     return quantum_computer
 
@@ -143,7 +167,3 @@ def count_blank_rows(gate_array):
             blank_counter += 1
 
     return blank_counter
-
-
-def invert_targets(input_arr):
-    return np.mod(input_arr + np.ones(input_arr.shape), 2)
