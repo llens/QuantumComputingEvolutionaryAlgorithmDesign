@@ -34,6 +34,7 @@ def apply_quantum_gates(quantum_computer, gates, gate_array):
 
 
 def quantum_gate_output_switch(array_value):
+    output_string = ''
     if array_value == 0:
         output_string = '|'
     elif array_value == 1:
@@ -52,7 +53,7 @@ def remove_redundant_gate_series(gate_array):
     col_length = len(gate_array)
     for k in range(col_length):
         for i in range(len(gate_array[1])):
-            if gate_array[k][i] == 2 or  gate_array[k][i] == 3 or gate_array[k][i] == 4:
+            if gate_array[k][i] == 2 or gate_array[k][i] == 3 or gate_array[k][i] == 4:
                 if k > 0 and gate_array[k][i] == gate_array[k - 1][i]:
                     gate_array[k][i] = 0
                     gate_array[k - 1][i] = 0
@@ -136,7 +137,7 @@ def measure_quantum_output(quantum_computer, gates):
     state = quantum_computer.qubits.get_quantum_register_containing(gates[0]).get_state()
     probability = Probability.get_probabilities(state)
 
-    #Remove any solutions that are not fully entangled due to input/ output requirements.
+    # Remove any solutions that are not fully entangled due to input/ output requirements.
     if len(probability) != 2 ** len(gates):
         probability = np.empty((2 ** len(gates),)) * np.nan
 
@@ -151,7 +152,7 @@ def run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array):
 
     score = - 1 - np.sum((probabilities - target_set) ** 2) / (2 ** len(gates))
 
-    if np.isnan(score) :
+    if np.isnan(score):
         score = -2
 
     if score == -1:

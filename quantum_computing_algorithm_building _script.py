@@ -18,7 +18,8 @@ if __name__ == "__main__":
     gates = ["q0", "q1", "q2", "q3", "q4"]
     input_size = 10
 
-    #Sum of probabilities exceeds ones as not yet entangled.
+    # Sum of probabilities exceeds ones as not yet entangled.
+    input_set = []
     if example == 'flip':
         input_set = discrete_inputs(gates, input_size)
     elif example == 'inverse':

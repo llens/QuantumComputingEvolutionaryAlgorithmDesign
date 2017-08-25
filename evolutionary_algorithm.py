@@ -18,7 +18,7 @@ def evolve_algorithm(input_set, target_set, gates):
     toolbox.register("map", pool.map)
     toolbox.register("attr_bool", random.randint, 0, 4)
 
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 200)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 600)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register("evaluate", evaluate_quantum_algorithm, input_set=input_set, target_set=target_set, gates=gates)
@@ -34,13 +34,13 @@ def evolve_algorithm(input_set, target_set, gates):
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=100,
-                                   stats=stats, halloffame=hof, verbose=True)
+    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=100, stats=stats, halloffame=hof, verbose=True)
 
     print 'Best individual:'
     output_quantum_gates(dna_to_gates(list(hof[0]), gates))
 
     run_quantum_algorithm_over_set(input_set, target_set, gates, dna_to_gates(list(hof[0]), gates))
+
 
 def evaluate_quantum_algorithm(individual, input_set, target_set, gates):
     return run_quantum_algorithm_over_set(input_set, target_set, gates, dna_to_gates(individual, gates))
@@ -49,4 +49,3 @@ def evaluate_quantum_algorithm(individual, input_set, target_set, gates):
 def dna_to_gates(individual, gates):
     gate_array = np.asarray(individual).reshape((-1, len(gates)))
     return remove_redundant_gate_series(cnot_two_gate_operation(gate_array))
-
