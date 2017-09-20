@@ -150,13 +150,7 @@ def run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array):
     for i in range(len(input_set)):
         probabilities[i, :] = run_quantum_algorithm(input_set[i, :], gates, gate_array)
 
-    score = - 1 - np.sum((probabilities - target_set) ** 2) / (2 ** (len(gates)))
-
-    print 'here'
-    print probabilities
-    print target_set
-    print score
-    print np.sum((probabilities - target_set) ** 2) / (2 ** (len(gates)))
+    score = - 1 - np.sum((probabilities - target_set) / (len(target_set)) ** 2)
 
     if np.isnan(score):
         score = -2
