@@ -19,6 +19,7 @@ def evolve_algorithm(input_set, target_set, gates):
     toolbox.register("attr_bool", random.randint, 0, 4)
 
     toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 120)
+
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register(
@@ -27,7 +28,7 @@ def evolve_algorithm(input_set, target_set, gates):
     toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
     toolbox.register("select", tools.selTournament, tournsize=3)
 
-    pop = toolbox.population(n=200)
+    pop = toolbox.population(n=500)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
