@@ -42,6 +42,7 @@ def discrete_input(gates):
 
 def discrete_qbit():
     temp = random.getrandbits(1)
+
     return [temp, 1 - temp]
 
 
