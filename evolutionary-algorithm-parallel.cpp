@@ -1,31 +1,8 @@
-#include <iostream>
-#include <vector>
-#include <cstdlib>
-#include <algorithm>
-#include <cstring>
-#include <climits>
-#include <list>
-#include <omp.h>
-#include "evolutionary-algorithm.h"
+#include "evolutionary-algorithm-parallel.h"
 #include "quantum-computer.h"
 #include "quantum-test-generator.h"
 
-using namespace std;
-
-struct ParallelGenerationData {
-	vector< vector<int> > generation;
-	vector<double> scores;
-};
-
-void printDna(vector<int> dna) {
-	for (unsigned int i = 0; i < dna.size(); i++)
-	{
-		cout << dna[i];
-	}
-	cout << endl;
-}
-
-ParallelGenerationData insertInGeneration (ParallelGenerationData pData, vector<int> dna, double score) {
+ParallelGenerationData insertInGeneration(ParallelGenerationData pData, vector<int> dna, double score) {
 	vector<double>::iterator it = lower_bound(pData.scores.begin(), pData.scores.end(), score);
 	int index = distance(pData.scores.begin(), it);
 	if (pData.scores.size() == 0) {
@@ -42,10 +19,12 @@ ParallelGenerationData insertInGeneration (ParallelGenerationData pData, vector<
 	return pData;
 }
 
-double reward (vector<int> dna) {
-	double reward = 0;
+double reward(vector<int> dna) {
+	VectorXcd distance;
+	double score = 0;
 	int num_bits = 5;
 	int input_iter = 100;
+	Map<VectorXi> dna_e(dna.data(), dna.size());
 
 	QuantumComputer* quant_comp = new QuantumComputer();
 	QuantumTestGenerator* quant_test = new QuantumTestGenerator();
@@ -55,38 +34,38 @@ double reward (vector<int> dna) {
 	int i = 0;
 	while (i < input_iter) {
 		quant_test -> Next();
-		quant_comp -> InputStates(quant_test -> input);
-		quant_comp -> ApplyAlgorithm(dna);
-		for (unsigned int j = 0; j < quant_comp -> states.size(); j++) {
-			reward -= abs(quant_comp -> states[i] - quant_test -> output[i]);
-		}
+		quant_test -> input.normalize();
+		quant_comp -> states = quant_test -> input;
+		quant_comp -> ApplyAlgorithm(dna_e);
+		distance = quant_comp -> states - quant_test -> output;
+		score += distance.norm();
 		i++;
 	}
 
 	delete quant_comp;
 	delete quant_test;
 
-	return reward;
+	return score;
 }
 
-ParallelGenerationData scoreDna (vector<int> dna, ParallelGenerationData pData) {
+ParallelGenerationData scoreDna(vector<int> dna, ParallelGenerationData pData) {
 	double rwrd = reward(dna);
 	return insertInGeneration(pData, dna, rwrd);
 }	
 
-void EvolutionarySearch::SetDnaLength (int len) {
+void EvolutionarySearch::SetDnaLength(int len) {
 	dnaLength = len;
 }
 
-void EvolutionarySearch::SetMutationRate (int mtr) {
+void EvolutionarySearch::SetMutationRate(int mtr) {
 	mutationRate = mtr;
 }
 
-void EvolutionarySearch::SetGenerationSize (int genSize) {
+void EvolutionarySearch::SetGenerationSize(int genSize) {
 	generationSize = genSize;
 }
 
-vector<int> EvolutionarySearch::GenerateDna () {
+vector<int> EvolutionarySearch::GenerateDna() {
 	vector<int> dna;
 	for (int i = 0; i < dnaLength; i++) {
 		int a = rand() % geneNum;
@@ -95,27 +74,21 @@ vector<int> EvolutionarySearch::GenerateDna () {
 	return dna;
 }
 
-void EvolutionarySearch::Init () {
+void EvolutionarySearch::Init() {
 	bestScore = -1E10;
 	int i = 0;
+	ParallelGenerationData pData;
 	while (i < generationSize) {
 		vector<int> dna = GenerateDna();
-		ScoreDna(dna);
+		pData = scoreDna(dna, pData);
 		i++;
 	}
+	generation = pData.generation;
+	scores = pData.scores;
 }
 
-void EvolutionarySearch::EvaluateGeneration () {
+void EvolutionarySearch::EvaluateGeneration() {
 	vector< vector<int> > unorderedGeneration;
-
-	//vector<int> vec;
-	//for (int i = 0; i < generationSize; i++) {
-	//	for (int j = 0; j < dnaLength; j++) {
-	//		vec.push_back(generation[i][j]);	
-	//	}
-	//	unorderedGeneration.push_back(vec);
-	//	vec.clear();
-	//}
 	unorderedGeneration = generation;
 	generation.clear();
 	scores.clear();
@@ -135,24 +108,20 @@ void EvolutionarySearch::EvaluateGeneration () {
 		{
 			loopGeneration.push_back(pData);
 		}
-	}
-	
-	for (int i = 0; i < loopGeneration.size(); i++) {
-		for (int j = 0; j < loopGeneration[i].scores.size(); j++) {
-			InsertInGeneration(loopGeneration[i].generation[j], loopGeneration[i].scores[j]);
-		}
+	copy(pData.generation.begin(), pData.generation.end(), back_inserter(generation));
+	copy(pData.scores.begin(), pData.scores.end(), back_inserter(scores));
 	}
 }
 
-void EvolutionarySearch::BreedGeneration () {
+void EvolutionarySearch::BreedGeneration() {
 	for (int i = 0; i < (generationSize / 2); i++) {
-		unsigned int j = generation.size() - i - 1;
-		int a = rand() % generation.size();
+		unsigned int j = generationSize - i - 1;
+		int a = rand() % generationSize;
 		generation[i] = Breed(generation[j], generation[a]);
 	}
 }
 
-vector<int> EvolutionarySearch::Breed (vector<int> dna_a, vector<int> dna_b) {
+vector<int> EvolutionarySearch::Breed(vector<int> dna_a, vector<int> dna_b) {
 	for (unsigned int i = 0; i < dna_a.size(); i++)
 	{	
 		int a = rand() % 2;
@@ -167,22 +136,6 @@ vector<int> EvolutionarySearch::Breed (vector<int> dna_a, vector<int> dna_b) {
 	return dna_a;
 }
 
-void EvolutionarySearch::InsertInGeneration (vector<int> dna, double score) {
-	vector<double>::iterator it = lower_bound(scores.begin(), scores.end(), score);
-	int index = distance(scores.begin(), it);
-	if (scores.size() == 0) {
-		scores.push_back(score);
-	} else {
-		scores.insert(it, score);
-	}
-	
-	if (generation.size() < 1) {
-		generation.push_back(dna);
-	} else {
-		generation.insert(generation.begin() + index, dna);
-	}
-}
-
 void EvolutionarySearch::Evolve(int iter) {
 	int i = 0;
 	while (i < iter) {
@@ -193,54 +146,6 @@ void EvolutionarySearch::Evolve(int iter) {
 	}
 }
 
-void EvolutionarySearch::ScoreDna (vector<int> dna) {
-	double reward = Reward(dna);
-	if (reward > bestScore) {
-		bestScore = reward;
-		bestDna = dna;
-	}
-	InsertInGeneration(dna, reward);
-}
-
-double EvolutionarySearch::Reward (vector<int> dna) {
-	double reward = 0;
-	int num_bits = 5;
-	int input_iter = 10;
-	
-	quant_comp.SetNumQBits(num_bits);
-	quant_test.Init(num_bits);
-	int i = 0;
-	while (i < input_iter) {
-		quant_test.Next();
-		quant_comp.InputStates(quant_test.input);
-		quant_comp.ApplyAlgorithm(dna);
-		for (unsigned int j = 0; j < quant_comp.states.size(); j++) {
-			reward -= abs(quant_comp.states[i] - quant_test.output[i]);
-		}
-		i++;
-	};
-
-	return reward;
-}
-
 void EvolutionarySearch::PrintGeneration(int i) {
 	cout << i << '\t' << scores[0] << '\t' << scores[scores.size() - 1] << endl;
-}
-
-int main() 
-{
-	srand((unsigned)time(NULL));
-	
-	EvolutionarySearch evol_search;
-	
-	evol_search.SetDnaLength (50);
-	evol_search.SetMutationRate (0.05);
-	evol_search.SetGenerationSize (500);
-	
-	evol_search.Init();
-
-	evol_search.Evolve(1000);
-	printDna(evol_search.bestDna);
-	
-	return 0;
 }

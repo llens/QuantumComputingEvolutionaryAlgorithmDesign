@@ -3,20 +3,21 @@
 
 #include <vector>
 #include <complex>
+#include <Eigen/Dense>
 
 using namespace std;
+using namespace Eigen;
 
 class QuantumTestGenerator {
 	public:
 	int numQBits;
-	vector <complex <double> > input;
-	vector <complex <double> > output;
+	VectorXcd input;
+	VectorXcd output;
 	
 	void Init (int);
 	void Next ();
 	void GenerateInput ();
 	void QuantumFourierTransform ();
-	vector <complex <double> > Normalise (vector <complex <double> >);
 };
 
 #endif

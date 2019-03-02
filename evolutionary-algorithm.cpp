@@ -4,20 +4,9 @@
 #include <algorithm>
 #include <cstring>
 #include <climits>
-#include <omp.h>
 #include "evolutionary-algorithm.h"
 #include "quantum-computer.h"
 #include "quantum-test-generator.h"
-
-using namespace std;
-
-void printDna(vector<int> dna) {
-	for (unsigned int i = 0; i < dna.size(); i++)
-	{
-		cout << dna[i];
-	}
-	cout << endl;
-	};
 
 void EvolutionarySearch::SetDnaLength (int len) {
 	dnaLength = len;
@@ -63,14 +52,8 @@ void EvolutionarySearch::EvaluateGeneration () {
 	}
 	generation.clear();
 	scores.clear();
-	#pragma omp parallel num_threads(7) 
-	{
-		int id = omp_get_thread_num();    
-		int total = omp_get_num_threads();
-		int factor = generationSize / total;
-		for (int i = id * factor; i < id * (factor + 1); i++) {
-			ScoreDna(unorderedGeneration[i]);
-		}
+	for (int i = 0; i < generationSize; i++) {
+		ScoreDna(unorderedGeneration[i]);
 	}
 }
 
@@ -137,40 +120,24 @@ void EvolutionarySearch::PrintGeneration(int i) {
 }
 
 double EvolutionarySearch::Reward (vector<int> dna) {
+	VectorXcd distance;
 	double reward = 0;
 	int num_bits = 5;
 	int input_iter = 100;
+	Map<VectorXi> dna_e(dna.data(), dna.size());
 	
 	quant_comp.SetNumQBits(num_bits);
 	quant_test.Init(num_bits);
 	int i = 0;
 	while (i < input_iter) {
 		quant_test.Next();
-		quant_comp.InputStates(quant_test.input);
-		quant_comp.ApplyAlgorithm(dna);
-		for (unsigned int j = 0; j < quant_comp.states.size(); j++) {
-			reward -= abs(quant_comp.states[i] - quant_test.output[i]);
-		}
+		quant_test.input.normalize();
+		quant_comp.states = quant_test.input;
+		quant_comp.ApplyAlgorithm(dna_e);
+		distance = quant_comp.states - quant_test.output;
+		reward += distance.norm();
 		i++;
 	};
 
 	return reward;
-}
-
-int main() 
-{
-	srand((unsigned)time(NULL));
-	
-	EvolutionarySearch evol_search;
-	
-	evol_search.SetDnaLength (5);
-	evol_search.SetMutationRate (0.05);
-	evol_search.SetGenerationSize (50);
-	
-	evol_search.Init();
-
-	evol_search.Evolve(1000);
-	printDna(evol_search.bestDna);
-	
-	return 0;
 }
