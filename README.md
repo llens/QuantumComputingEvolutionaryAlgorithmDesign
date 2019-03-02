@@ -13,8 +13,3 @@ T: T
 H: Hadamard  
 .- (+): CNOT  
 I: Identity (Blank)
-
-# Compilation
-g++ -g -O3 -fopenmp ....
-Choose either the single core or parallel version.
-
