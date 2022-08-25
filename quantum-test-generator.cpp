@@ -1,16 +1,11 @@
-#include <vector>
-#include <cstdlib>
 #include <complex>
-#include <complex.h>
 #include <math.h>
 #include "quantum-test-generator.h"
 using namespace std;
 
-#include <iostream>
-
 void QuantumTestGenerator::Init (int nQBits) {
 	numQBits = nQBits;
-};
+}
 
 void QuantumTestGenerator::QuantumFourierTransform () {
 	output = VectorXcd::Zero(pow(2, numQBits));
@@ -25,10 +20,10 @@ void QuantumTestGenerator::QuantumFourierTransform () {
 			output[i] += root * input[i];
 		}
 	}
-};
+}
 
 void QuantumTestGenerator::Next () {
 	input = VectorXcd::Random(pow(2, numQBits));
 	input.normalize();
 	QuantumFourierTransform();
-};
+}

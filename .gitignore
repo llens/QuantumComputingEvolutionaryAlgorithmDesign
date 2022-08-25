@@ -58,3 +58,7 @@ TestResults/
 ehthumbs.db
 Icon?
 Thumbs.db
+
+.idea/*
+cmake-build-debug/*
+

@@ -9,7 +9,7 @@ VectorXi convertVectorToEigen(vector<int> vec) {
 		  vec.size());
 }
 
-int main(int argc, char ** argv)
+int main()
 {
 	srand((unsigned)time(NULL));
 	

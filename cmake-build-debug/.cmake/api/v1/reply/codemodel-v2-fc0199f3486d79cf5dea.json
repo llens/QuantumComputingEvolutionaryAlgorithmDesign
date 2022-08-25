@@ -1,0 +1,87 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "quantum-computing-evolutionary-algorithm-design",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "evolutionary-algorithm::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-evolutionary-algorithm-Debug-04636bfa5cc53bc75677.json",
+					"name" : "evolutionary-algorithm",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "quantum-computer::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-quantum-computer-Debug-8ff07a5617cbad928128.json",
+					"name" : "quantum-computer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "quantum-computing-evolutionary-algorithm-design::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-quantum-computing-evolutionary-algorithm-design-Debug-bb48ea1785b3dedd9d23.json",
+					"name" : "quantum-computing-evolutionary-algorithm-design",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "quantum-test-generator::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-quantum-test-generator-Debug-430f0fc215f428db1c10.json",
+					"name" : "quantum-test-generator",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/tom/Git/QuantumComputingEvolutionaryAlgorithmDesign/cmake-build-debug",
+		"source" : "/home/tom/Git/QuantumComputingEvolutionaryAlgorithmDesign"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}

@@ -21,7 +21,7 @@ class EvolutionarySearch {
 	QuantumTestGenerator quant_test;
 	
 	void SetDnaLength (int);
-	void SetMutationRate (int);
+	void SetMutationRate (double);
 	void SetGenerationSize (int);
 	vector<int> GenerateDna ();
 	void Init ();

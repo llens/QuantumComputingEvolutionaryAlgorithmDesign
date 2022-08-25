@@ -1,18 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
-#include <algorithm>
-#include <cstring>
 #include <climits>
 #include "evolutionary-algorithm.h"
-#include "quantum-computer.h"
 #include "quantum-test-generator.h"
 
 void EvolutionarySearch::SetDnaLength (int len) {
 	dnaLength = len;
 }
 
-void EvolutionarySearch::SetMutationRate (int mtr) {
+void EvolutionarySearch::SetMutationRate (double mtr) {
 	mutationRate = mtr;
 }
 
@@ -137,7 +134,7 @@ double EvolutionarySearch::Reward (vector<int> dna) {
 		distance = quant_comp.states - quant_test.output;
 		reward += distance.norm();
 		i++;
-	};
+	}
 
 	return reward;
 }
