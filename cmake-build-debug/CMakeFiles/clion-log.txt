@@ -1,4 +1,0 @@
-/home/tom/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/222.3739.54/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/tom/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/222.3739.54/bin/ninja/linux/ninja -G Ninja -S /home/tom/Git/QuantumComputingEvolutionaryAlgorithmDesign -B /home/tom/Git/QuantumComputingEvolutionaryAlgorithmDesign/cmake-build-debug
--- Configuring done
--- Generating done
--- Build files have been written to: /home/tom/Git/QuantumComputingEvolutionaryAlgorithmDesign/cmake-build-debug
