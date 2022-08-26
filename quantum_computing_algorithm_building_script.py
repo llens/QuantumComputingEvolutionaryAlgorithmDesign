@@ -1,12 +1,6 @@
-from QuantumComputer import Probability
 from evolutionary_algorithm import evolve_algorithm
 from target_generation import one_over_targets, flip_targets, continuous_inputs, discrete_inputs
 import numpy as np
-
-
-def print_quantum_states(quantum_computer, quantum_register):
-    Probability.pretty_print_probabilities(
-        quantum_computer.qubits.get_quantum_register_containing(quantum_register).get_state())
 
 
 def underlined_output(string):
