@@ -269,8 +269,7 @@ class State(object):
         for s in list(itertools.product([0, 1], repeat=n_qubits)):
             sname = ('%d' * n_qubits) % s
             state = State.state_from_string(sname)
-            print
-            sname, '->', State.string_from_state(gate * state)
+            print sname, '->', State.string_from_state(gate * state)
 
 
 class StateNotSeparableException(exceptions.Exception):
@@ -305,13 +304,10 @@ class Probability(object):
                     am_desc += '|%s>+' % (state_desc)
             if pr != 0:
                 pr_desc += 'Pr(|%s>)=%f; ' % (state_desc, pr)
-        print
-        am_desc[0:-1]
-        print
-        pr_desc
+        print am_desc[0:-1]
+        print pr_desc
         if state.shape == (4, 1):
-            print
-            "<state>=%f" % float(probs[0] + probs[3] - probs[1] - probs[2])
+            print "<state>=%f" % float(probs[0] + probs[3] - probs[1] - probs[2])
 
     @staticmethod
     def expectation_x(state):
@@ -503,8 +499,7 @@ class QuantumComputer(object):
                 eqo = [q.idx for q in eqb]
                 # We know if the idxs are missing a number AND we want to find an idx that lies in there, we must entangle those states
                 if not get_state_for_qb.idx in eqo and get_state_for_qb.idx in range(min(eqo), max(eqo) + 1):
-                    print
-                    "We'll have to entangle the two"
+                    print "We'll have to entangle the two"
                     # We'll have to entangle the two
                     qb1 = self.qubits.get_quantum_register_containing(eqo[0].name)
                     get_state_for_qb.set_state(np.kron(qb.get_state(), qb1.get_state()))
@@ -600,8 +595,7 @@ class QuantumComputer(object):
     def apply_gate(self, gate, on_qubit_name):
         on_qubit = self.qubits.get_quantum_register_containing(on_qubit_name)
         if len(on_qubit.get_noop()) > 0:
-            print
-            "NOTE this qubit has been measured previously, there should be no more gates allowed but we are reverting that measurement for consistency with IBM's language"
+            print "NOTE this qubit has been measured previously, there should be no more gates allowed but we are reverting that measurement for consistency with IBM's language"
             on_qubit.set_state(on_qubit.get_noop())
             on_qubit.set_noop([])
         if not on_qubit.is_entangled():
@@ -653,11 +647,9 @@ class QuantumComputer(object):
             control_qubit_idx, target_qubit_idx = first_qubit.get_indices(second_qubit)
             gate_size = QuantumRegister.num_qubits(combined_state)
             try:
-                exec
-                'gate=Gate.CNOT%d_%d%d' % (gate_size, control_qubit_idx, target_qubit_idx)
+                exec 'gate=Gate.CNOT%d_%d%d' % (gate_size, control_qubit_idx, target_qubit_idx)
             except:
-                print
-                'gate=Gate.CNOT%d_%d%d' % (gate_size, control_qubit_idx, target_qubit_idx)
+                print 'gate=Gate.CNOT%d_%d%d' % (gate_size, control_qubit_idx, target_qubit_idx)
                 raise Exception("Unrecognized combination of number of qubits")
             first_qubit.set_state(gate * combined_state)
 
@@ -712,8 +704,7 @@ class QuantumComputer(object):
                 l = l.replace(k, v)
             l = l + ')'
             # Now running the code
-            exec
-            l
+            exec l
 
 
 class Program(object):
@@ -1434,8 +1425,7 @@ class TestQuantumRegister(unittest.TestCase):
         self.q1 = QuantumRegister("q1")
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
         self.q0 = None
         self.q1 = None
 
@@ -1452,8 +1442,7 @@ class TestMeasure(unittest.TestCase):
         self.startTime = time.time()
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def test_measure_probs_plus(self):
         measurements = []
@@ -1493,8 +1482,7 @@ class TestGetBloch(unittest.TestCase):
         self.startTime = time.time()
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def test_get_bloch(self):
         self.assertTrue(np.allclose(State.get_bloch(State.zero_state), np.array((0, 0, 1))))
@@ -1516,8 +1504,7 @@ class TestGetBloch2(unittest.TestCase):
         self.startTime = time.time()
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def get_bloch_2(self, state):
         """ equal to get_bloch just a different way of calculating things. Used for testing get_bloch. """
@@ -1541,8 +1528,7 @@ class TestCNOTGate(unittest.TestCase):
         self.startTime = time.time()
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def test_CNOT(self):
         self.assertTrue(np.allclose(Gate.CNOT2_01 * State.state_from_string('00'), State.state_from_string('00')))
@@ -1556,8 +1542,7 @@ class TestTGate(unittest.TestCase):
         self.startTime = time.time()
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def test_T(self):
         # This is useful to check some of the exercises on IBM's quantum experience.
@@ -1648,8 +1633,7 @@ class TestMultiQuantumRegisterStates(unittest.TestCase):
         self.five_qubits_11111 = np.kron(self.four_qubits_1111, State.one_state)
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
 
     def test_basis(self):
         # Sanity checks
@@ -2311,8 +2295,7 @@ class TestQuantumComputer(unittest.TestCase):
                 self.assertTrue(self.qc.bloch_coords_equal(qubit_name, bloch))
 
     def tearDown(self):
-        print
-        self._testMethodName, "%.3f" % (time.time() - self.startTime)
+        print self._testMethodName, "%.3f" % (time.time() - self.startTime)
         self.qc = None
 
 
