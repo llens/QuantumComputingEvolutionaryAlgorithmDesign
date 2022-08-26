@@ -18,7 +18,7 @@ def evolve_algorithm(input_set, target_set, gates):
     toolbox.register("map", pool.map)
     toolbox.register("attr_bool", random.randint, 0, 4)
 
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 60)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 30)
 
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
