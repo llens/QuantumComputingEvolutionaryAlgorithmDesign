@@ -7,9 +7,10 @@ def underlined_output(string):
     print string
     print '----------------------'
 
+
 if __name__ == "__main__":
     example = 'inverse'
-    gates = ["q0", "q1", "q2"]#, "q3", "q4"]
+    gates = ["q0", "q1", "q2"]  # , "q3", "q4"]
     input_size = 10
 
     # Sum of probabilities exceeds ones as not yet entangled.
@@ -18,6 +19,8 @@ if __name__ == "__main__":
         input_set = discrete_inputs(gates, input_size)
     elif example == 'inverse':
         input_set = continuous_inputs(gates, input_size)
+    elif example == 'fourier'
+        input_set
 
     targets = np.zeros(input_set.shape)
 
