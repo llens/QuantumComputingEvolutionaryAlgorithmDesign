@@ -14,7 +14,7 @@ def underlined_output(string):
     print '----------------------'
 
 if __name__ == "__main__":
-    example = 'flip'
+    example = 'inverse'
     gates = ["q0", "q1", "q2"]#, "q3", "q4"]
     input_size = 10
 
