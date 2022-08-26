@@ -10,6 +10,10 @@ def one_over_targets(input_arr):
     return np.divide(np.ones(input_arr.shape), input_arr)
 
 
+def fourier_targets(input_arr):
+    return np.fft.fft(input_arr)
+
+
 def continuous_inputs(gates, n_inputs):
     i = 1
     input_arr = continuous_input(gates)
@@ -47,6 +51,6 @@ def discrete_qbit():
 
 
 def continuous_input(gates):
-    inputs = np.random.uniform(0, 2, 2 ** len(gates))
+    inputs = np.random.uniform(0, 2, 2 ** len(gates)) + np.random.uniform(0, 2, 2 ** len(gates)) * 1j
     inputs /= sum(inputs)
     return inputs

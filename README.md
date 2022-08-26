@@ -20,7 +20,3 @@ The required inputs and outputs for an algorithm are supplied as a series of pro
 # Scoring 
 Score = (-1 - mean square error) / (1 + number of blank rows)  
 Scoring is based on the absolute difference from the target probability and output probability of generated individual, divided by the number of possible eigenstates, this is then divided by the number of blank rows to promote simple algorithms. Python DEAP aims to minimise a negative score.
-
-# To Do.
-Implement more algorithm examples and working case studies.
-

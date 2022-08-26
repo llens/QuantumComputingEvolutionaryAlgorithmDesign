@@ -18,7 +18,7 @@ def evolve_algorithm(input_set, target_set, gates):
     toolbox.register("map", pool.map)
     toolbox.register("attr_bool", random.randint, 0, 4)
 
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 12)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 30)
 
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
@@ -36,7 +36,7 @@ def evolve_algorithm(input_set, target_set, gates):
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=40, stats=stats, halloffame=hof, verbose=True)
+    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=15, stats=stats, halloffame=hof, verbose=True)
 
     print 'Best individual:'
     output_quantum_gates(dna_to_gates(list(hof[0]), gates))
