@@ -78,7 +78,7 @@ def output_quantum_gates(gate_array):
                 output_string += '     ' + quantum_gate_output_switch(gate_array[k][i])
                 i += 2
 
-        print output_string
+        print(output_string)
 
 
 def cnot_two_gate_operation(gate_array):
