@@ -29,4 +29,4 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics  --exclude QuantumComputer.py #External file
       - name: Test with unittest
         run: |
-          unittest *.py
+          python -m unittest *.py
