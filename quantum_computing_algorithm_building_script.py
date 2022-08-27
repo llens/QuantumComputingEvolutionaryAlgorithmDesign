@@ -1,7 +1,5 @@
 from evolutionary_algorithm import evolve_algorithm
-from target_generation import one_over_targets, flip_targets, continuous_inputs, discrete_inputs, fourier_targets, \
-    setup_example_problem
-import numpy as np
+from target_generation import setup_example_problem
 
 
 def underlined_output(string):
