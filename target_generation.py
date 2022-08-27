@@ -2,6 +2,34 @@ import numpy as np
 import random
 
 
+def setup_example_problem(example, gates, input_size):
+    # Sum of probabilities exceeds ones as not yet entangled.
+    input_set = []
+    match example:
+        case 'flip':
+            input_set = discrete_inputs(gates, input_size)
+        case 'inverse':
+            input_set = continuous_inputs(gates, input_size)
+        case 'fourier':
+            input_set = continuous_inputs(gates, input_size)
+
+    targets = np.zeros(input_set.shape) + np.zeros(input_set.shape) * 1j
+
+    for i in range(len(input_set)):
+        match example:
+            case 'flip':
+                targets[i, :] = flip_targets(input_set[i, :])
+            case 'inverse':
+                targets[i, :] = one_over_targets(input_set[i, :])
+            case 'fourier':
+                targets[i, :] = fourier_targets(input_set[i, :])
+
+        temp_sum = sum(targets[i, :])
+        if temp_sum != 0:
+            targets[i, :] /= temp_sum
+
+    return input_set, targets
+
 def flip_targets(input_arr):
     return np.mod(input_arr + np.ones(input_arr.shape), 2)
 

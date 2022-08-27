@@ -9,16 +9,17 @@ import numpy as np
 
 
 def quantum_gate_switch(quantum_computer, gates, array_value, index):
-    if array_value == 1:
-        quantum_computer.apply_gate(Gate.T, gates[index])
-    elif array_value == 2:
-        quantum_computer.apply_gate(Gate.H, gates[index])
-    elif array_value == 3:
-        if index < len(gates):
-            quantum_computer.apply_two_qubit_gate_CNOT(gates[index], gates[index + 1])
-    elif array_value == 4:
-        if index > 0:
-            quantum_computer.apply_two_qubit_gate_CNOT(gates[index - 1], gates[index])
+    match array_value:
+        case 1:
+            quantum_computer.apply_gate(Gate.T, gates[index])
+        case 2:
+            quantum_computer.apply_gate(Gate.H, gates[index])
+        case 3:
+            if index < len(gates):
+                quantum_computer.apply_two_qubit_gate_CNOT(gates[index], gates[index + 1])
+        case 4:
+            if index > 0:
+                quantum_computer.apply_two_qubit_gate_CNOT(gates[index - 1], gates[index])
 
     return quantum_computer
 
@@ -35,16 +36,17 @@ def apply_quantum_gates(quantum_computer, gates, gate_array):
 
 def quantum_gate_output_switch(array_value):
     output_string = ''
-    if array_value == 0:
-        output_string = '|'
-    elif array_value == 1:
-        output_string = 'T'
-    elif array_value == 2:
-        output_string = 'H'
-    elif array_value == 3:
-        output_string = '. - (+)'
-    elif array_value == 4:
-        output_string = '(+) - .'
+    match array_value:
+        case 0:
+            output_string = '|'
+        case 1:
+            output_string = 'T'
+        case 2:
+            output_string = 'H'
+        case 3:
+            output_string = '. - (+)'
+        case 4:
+            output_string = '(+) - .'
 
     return output_string
 
@@ -53,16 +55,20 @@ def remove_redundant_gate_series(gate_array):
     col_length = len(gate_array)
     for k in range(col_length):
         for i in range(len(gate_array[1])):
-            if gate_array[k][i] == 2 or gate_array[k][i] == 3 or gate_array[k][i] == 4:
-                if k > 0 and gate_array[k][i] == gate_array[k - 1][i]:
-                    gate_array[k][i] = 0
-                    gate_array[k - 1][i] = 0
-
-                if k < (col_length - 1) and gate_array[k][i] == gate_array[k + 1][i]:
-                    gate_array[k][i] = 0
-                    gate_array[k + 1][i] = 0
+            remove_redundant_gate(gate_array, k, i, col_length)
 
     return gate_array
+
+
+def remove_redundant_gate(gate_array, idx_1, idx_2, column_length):
+    if gate_array[idx_1][idx_2] == 2 or gate_array[idx_1][idx_2] == 3 or gate_array[idx_1][idx_2] == 4:
+        if idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
+            gate_array[idx_1][idx_2] = 0
+            gate_array[idx_1 - 1][idx_2] = 0
+
+        if idx_1 < (column_length - 1) and gate_array[idx_1][idx_2] == gate_array[idx_1 + 1][idx_2]:
+            gate_array[idx_1][idx_2] = 0
+            gate_array[idx_1 + 1][idx_2] = 0
 
 
 def output_quantum_gates(gate_array):
