@@ -1,3 +1,5 @@
+from enum import Enum
+
 import numpy as np
 import random
 
@@ -29,6 +31,7 @@ def setup_example_problem(example, gates, input_size):
             targets[i, :] /= temp_sum
 
     return input_set, targets
+
 
 def flip_targets(input_arr):
     return np.mod(input_arr + np.ones(input_arr.shape), 2)
@@ -82,3 +85,9 @@ def continuous_input(gates):
     inputs = np.random.uniform(0, 2, 2 ** len(gates)) + np.random.uniform(0, 2, 2 ** len(gates)) * 1j
     inputs /= sum(inputs)
     return inputs
+
+class ExampleType(Enum):
+    Flip = "flip"
+    Inverse = "inverse"
+    Fourier = "fourier"
+
