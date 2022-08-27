@@ -4,8 +4,8 @@ import numpy as np
 
 
 def underlined_output(string):
-    print string
-    print '----------------------'
+    print(string)
+    print("----------------------")
 
 
 if __name__ == "__main__":
