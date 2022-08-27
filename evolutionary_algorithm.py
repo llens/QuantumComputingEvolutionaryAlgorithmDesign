@@ -38,7 +38,7 @@ def evolve_algorithm(input_set, target_set, gates):
 
     algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=15, stats=stats, halloffame=hof, verbose=True)
 
-    print 'Best individual:'
+    print("Best individual:")
     output_quantum_gates(dna_to_gates(list(hof[0]), gates))
 
     run_quantum_algorithm_over_set(input_set, target_set, gates, dna_to_gates(list(hof[0]), gates))

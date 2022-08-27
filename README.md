@@ -2,7 +2,7 @@
 
 # Description
 Uses evolutionary algorithms and python-quintuple to automatically design quantum computing algorithms. Inspired by the ideas in the following PhD thesis, but implemented entirely originally, http://theses.ucalgary.ca/jspui/bitstream/11023/2780/3/ucalgary_2016_zahedinejad_ehsan.pdf.
-The Quantum Computer implementation itself is from this project https://github.com/corbett/QuantumComputing
+The Quantum Computer implementation itself is from this project https://github.com/corbett/QuantumComputing, modifications made for security upgrades, PEP8 formatting.
 
 # Operation.
 The algorithm maps the complete set of quantum gates T, Hadamard, CNOT, and their relative positions as a simple 'DNA', a generation of multiple random quantum algorithm 'DNA' are generated and compared to the desired output quantum state, the best members of this generation are bred (cut and joined together) and mutated (random 'DNA' changes) to create the next generation which is again evaluated.
