@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Author: corbett@caltech.edu
+# This file is unmodified from the original, and does not conform to PEP8, and includes some flake violations.
 
 import numpy as np
 import unittest
