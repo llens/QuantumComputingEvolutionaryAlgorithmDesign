@@ -11,9 +11,7 @@ from math import sqrt, pi, e, log
 import time
 
 
-####
-## Gates
-####
+# Gates
 class Gate(object):
     i_ = np.complex(0, 1)
     ## One qubit gates
@@ -116,7 +114,7 @@ class Gate(object):
 
 
 ####
-## States
+# States
 ####
 class State(object):
     i_ = np.complex(0, 1)
@@ -159,7 +157,7 @@ class State(object):
             for state in separated_state:
                 State.string_from_state(state)
             return True
-        except StateNotSeparableException as e:
+        except StateNotSeparableException:
             return False
 
     @staticmethod
@@ -337,7 +335,9 @@ class QuantumRegister(object):
         self._state = state
         self.name = name
         self.idx = None
-        self._noop = []  # after a measurement set this so that we can allow no further operations. Set to Bloch coords if bloch operation performed
+        self._noop = []  # after a measurement set this so that we can allow no further operations. Set to Bloch
+
+    # coords if bloch operation performed
 
     @staticmethod
     def num_qubits(state):
