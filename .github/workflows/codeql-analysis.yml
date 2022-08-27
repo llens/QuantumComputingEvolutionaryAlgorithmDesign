@@ -20,6 +20,10 @@ on:
   schedule:
     - cron: '44 8 * * 4'
 
+paths-ignore:
+  - src/node_modules
+  - 'QuantumComputer.py'
+
 jobs:
   analyze:
     name: Analyze
