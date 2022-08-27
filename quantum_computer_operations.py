@@ -1,3 +1,8 @@
+import numbers
+from typing import List
+
+from numpy import ndarray
+
 from QuantumComputer import QuantumComputer, Gate, Probability
 import numpy as np
 
@@ -8,7 +13,8 @@ import numpy as np
 # CNOT: 3
 
 
-def quantum_gate_switch(quantum_computer, gates, array_value, index):
+def quantum_gate_switch(quantum_computer: QuantumComputer, gates: List[str], array_value: complex, index: int) \
+        -> QuantumComputer:
     match array_value:
         case 1:
             quantum_computer.apply_gate(Gate.T, gates[index])
@@ -24,7 +30,7 @@ def quantum_gate_switch(quantum_computer, gates, array_value, index):
     return quantum_computer
 
 
-def apply_quantum_gates(quantum_computer, gates, gate_array):
+def apply_quantum_gates(quantum_computer: QuantumComputer, gates: List[str], gate_array: ndarray) -> QuantumComputer:
     gate_array = remove_redundant_gate_series(cnot_two_gate_operation(gate_array))
 
     for k in range(len(gate_array)):
@@ -34,7 +40,7 @@ def apply_quantum_gates(quantum_computer, gates, gate_array):
     return quantum_computer
 
 
-def quantum_gate_output_switch(array_value):
+def quantum_gate_output_switch(array_value: complex) -> str:
     output_string = ''
     match array_value:
         case 0:

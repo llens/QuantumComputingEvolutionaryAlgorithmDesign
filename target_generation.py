@@ -1,15 +1,20 @@
+import random
 from enum import Enum
-from typing import List, Any
+from typing import List
 
 import numpy as np
-import random
-
 from numpy import ndarray
 
 
-def setup_example_problem(example: ExampleType, gates: List[str], input_size: int) -> tuple[Any, ndarray]:
+class ExampleType(Enum):
+    Flip = "flip"
+    Inverse = "inverse"
+    Fourier = "fourier"
+
+
+def setup_example_problem(example: ExampleType, gates: List[str], input_size: int) -> tuple[ndarray, ndarray]:
     # Sum of probabilities exceeds ones as not yet entangled.
-    input_set = np.array()
+    input_set = np.empty([])
     match example:
         case ExampleType.Flip:
             input_set = discrete_inputs(gates, input_size)
@@ -17,6 +22,8 @@ def setup_example_problem(example: ExampleType, gates: List[str], input_size: in
             input_set = continuous_inputs(gates, input_size)
         case ExampleType.Fourier:
             input_set = continuous_inputs(gates, input_size)
+        case _:
+            ValueError("No mapping found for given example type.")
 
     targets = np.zeros(input_set.shape) + np.zeros(input_set.shape) * 1j
 
@@ -36,19 +43,19 @@ def setup_example_problem(example: ExampleType, gates: List[str], input_size: in
     return input_set, targets
 
 
-def flip_targets(input_arr):
+def flip_targets(input_arr: ndarray) -> ndarray:
     return np.mod(input_arr + np.ones(input_arr.shape), 2)
 
 
-def one_over_targets(input_arr):
+def one_over_targets(input_arr: ndarray) -> ndarray:
     return np.divide(np.ones(input_arr.shape), input_arr)
 
 
-def fourier_targets(input_arr):
+def fourier_targets(input_arr: ndarray) -> ndarray:
     return np.fft.fft(input_arr)
 
 
-def continuous_inputs(gates, n_inputs):
+def continuous_inputs(gates: List[str], n_inputs: int) -> ndarray:
     i = 1
     input_arr = continuous_input(gates)
     while i < n_inputs:
@@ -58,7 +65,7 @@ def continuous_inputs(gates, n_inputs):
     return input_arr
 
 
-def discrete_inputs(gates: List[str], n_inputs: int):
+def discrete_inputs(gates: List[str], n_inputs: int) -> ndarray:
     i = 1
     input_arr = discrete_input(gates)
     while i < n_inputs:
@@ -68,9 +75,9 @@ def discrete_inputs(gates: List[str], n_inputs: int):
     return input_arr
 
 
-def discrete_input(gates: List[str]):
+def discrete_input(gates: List[str]) -> ndarray:
     i = 0
-    inputs = []
+    inputs = np.empty([])
     while i < (2 ** len(gates) / 2):
         inputs = np.hstack((inputs, discrete_qbit()))
         i += 1
@@ -84,13 +91,7 @@ def discrete_qbit() -> List[int]:
     return [temp, 1 - temp]
 
 
-def continuous_input(gates):
-    inputs = np.random.uniform(0, 2, 2 ** len(gates)) + np.random.uniform(0, 2, 2 ** len(gates)) * 1j
+def continuous_input(gates: List[str]) -> ndarray:
+    inputs: ndarray = np.random.uniform(0, 2, 2 ** len(gates)) + np.random.uniform(0, 2, 2 ** len(gates)) * 1j
     inputs /= sum(inputs)
     return inputs
-
-
-class ExampleType(Enum):
-    Flip = "flip"
-    Inverse = "inverse"
-    Fourier = "fourier"
