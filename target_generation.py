@@ -1,29 +1,32 @@
 from enum import Enum
+from typing import List, Any
 
 import numpy as np
 import random
 
+from numpy import ndarray
 
-def setup_example_problem(example, gates, input_size):
+
+def setup_example_problem(example: ExampleType, gates: List[str], input_size: int) -> tuple[Any, ndarray]:
     # Sum of probabilities exceeds ones as not yet entangled.
-    input_set = []
+    input_set = np.array()
     match example:
-        case 'flip':
+        case ExampleType.Flip:
             input_set = discrete_inputs(gates, input_size)
-        case 'inverse':
+        case ExampleType.Inverse:
             input_set = continuous_inputs(gates, input_size)
-        case 'fourier':
+        case ExampleType.Fourier:
             input_set = continuous_inputs(gates, input_size)
 
     targets = np.zeros(input_set.shape) + np.zeros(input_set.shape) * 1j
 
     for i in range(len(input_set)):
         match example:
-            case 'flip':
+            case ExampleType.Flip:
                 targets[i, :] = flip_targets(input_set[i, :])
-            case 'inverse':
+            case ExampleType.Inverse:
                 targets[i, :] = one_over_targets(input_set[i, :])
-            case 'fourier':
+            case ExampleType.Fourier:
                 targets[i, :] = fourier_targets(input_set[i, :])
 
         temp_sum = sum(targets[i, :])
@@ -55,7 +58,7 @@ def continuous_inputs(gates, n_inputs):
     return input_arr
 
 
-def discrete_inputs(gates, n_inputs):
+def discrete_inputs(gates: List[str], n_inputs: int):
     i = 1
     input_arr = discrete_input(gates)
     while i < n_inputs:
@@ -65,7 +68,7 @@ def discrete_inputs(gates, n_inputs):
     return input_arr
 
 
-def discrete_input(gates):
+def discrete_input(gates: List[str]):
     i = 0
     inputs = []
     while i < (2 ** len(gates) / 2):
@@ -75,7 +78,7 @@ def discrete_input(gates):
     return inputs
 
 
-def discrete_qbit():
+def discrete_qbit() -> List[int]:
     temp = random.getrandbits(1)
 
     return [temp, 1 - temp]
@@ -86,8 +89,8 @@ def continuous_input(gates):
     inputs /= sum(inputs)
     return inputs
 
+
 class ExampleType(Enum):
     Flip = "flip"
     Inverse = "inverse"
     Fourier = "fourier"
-
