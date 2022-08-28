@@ -45,7 +45,7 @@ class EvolutionaryAlgorithm:
         toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
         toolbox.register("select", tools.selTournament, tournsize=3)
 
-        pop = toolbox.population(n=50)
+        pop = toolbox.population(n=int(self.config.get_config_value("EvolutionaryAlgorithm", "POPULATION")))
         hof = tools.HallOfFame(1)
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", np.mean)
@@ -53,7 +53,15 @@ class EvolutionaryAlgorithm:
         stats.register("min", np.min)
         stats.register("max", np.max)
 
-        algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=15, stats=stats, halloffame=hof, verbose=True)
+        algorithms.eaSimple(
+            pop,
+            toolbox,
+            cxpb=0.5,
+            mutpb=0.5,
+            ngen=int(self.config.get_config_value("EvolutionaryAlgorithm", "GENERATIONS")),
+            stats=stats,
+            halloffame=hof,
+            verbose=True)
 
         print("Best individual:")
         output_quantum_gates(dna_to_gates(list(hof[0]), gates))
