@@ -1,13 +1,17 @@
 import random
+from typing import List
+
 import array
 import multiprocessing
 import numpy as np
 from deap import algorithms, tools, base, creator
+from numpy import ndarray
+
 from quantum_computer_operations import run_quantum_algorithm_over_set, cnot_two_gate_operation,\
     output_quantum_gates, remove_redundant_gate_series
 
 
-def evolve_algorithm(input_set, target_set, gates):
+def evolve_algorithm(input_set: ndarray, target_set: ndarray, gates: List[str]) -> None:
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", array.array, typecode='b', fitness=creator.FitnessMax)
 
@@ -44,10 +48,10 @@ def evolve_algorithm(input_set, target_set, gates):
     run_quantum_algorithm_over_set(input_set, target_set, gates, dna_to_gates(list(hof[0]), gates))
 
 
-def evaluate_quantum_algorithm(individual, input_set, target_set, gates):
+def evaluate_quantum_algorithm(individual: List[int], input_set: ndarray, target_set: ndarray, gates: List[str]):
     return run_quantum_algorithm_over_set(input_set, target_set, gates, dna_to_gates(individual, gates))
 
 
-def dna_to_gates(individual, gates):
+def dna_to_gates(individual: List[int], gates: List[str]) -> ndarray:
     gate_array = np.asarray(individual).reshape((-1, len(gates)))
     return remove_redundant_gate_series(cnot_two_gate_operation(gate_array))
