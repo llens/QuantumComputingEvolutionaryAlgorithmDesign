@@ -1,10 +1,10 @@
-import numbers
 from typing import List, Tuple
 
+import numpy as np
 from numpy import ndarray
 
 from QuantumComputer import QuantumComputer, Gate, Probability
-import numpy as np
+
 
 # Quantum Gate to Number Map:
 # Identity: 0

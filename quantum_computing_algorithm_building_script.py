@@ -1,4 +1,5 @@
-from evolutionary_algorithm import evolve_algorithm
+from Config import Config
+from EvolutionaryAlgorithm import EvolutionaryAlgorithm
 from target_generation import setup_example_problem, ExampleType
 
 
@@ -9,4 +10,4 @@ if __name__ == "__main__":
 
     input_set, targets = setup_example_problem(example, gates, input_size)
 
-    evolve_algorithm(input_set, targets, gates)
+    EvolutionaryAlgorithm(Config()).evolve_algorithm(input_set, targets, gates)
