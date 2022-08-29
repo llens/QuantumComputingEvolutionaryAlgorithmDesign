@@ -45,7 +45,7 @@ class EvolutionaryAlgorithm:
         toolbox.register(
             "mutate",
             tools.mutFlipBit,
-            indpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "INDIVIDUAL_SWAP_PROBABILITY"))
+            indpb=float(self.config.get_config_value("EvolutionaryAlgorithm", "INDIVIDUAL_SWAP_PROBABILITY"))
         )
         toolbox.register(
             "select",
@@ -64,8 +64,8 @@ class EvolutionaryAlgorithm:
         algorithms.eaSimple(
             pop,
             toolbox,
-            cxpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "BREEDING_PROBABILITY")),
-            mutpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "MUTATION_PROBABILITY")),
+            cxpb=float(self.config.get_config_value("EvolutionaryAlgorithm", "BREEDING_PROBABILITY")),
+            mutpb=float(self.config.get_config_value("EvolutionaryAlgorithm", "MUTATION_PROBABILITY")),
             ngen=int(self.config.get_config_value("EvolutionaryAlgorithm", "GENERATIONS")),
             stats=stats,
             halloffame=hof,

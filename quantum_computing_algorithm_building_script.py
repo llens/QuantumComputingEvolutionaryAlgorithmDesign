@@ -12,7 +12,7 @@ if __name__ == "__main__":
     input_set, targets = setup_example_problem(
         example,
         gates,
-        input_test_cases)
+        input_test_cases
     )
 
     EvolutionaryAlgorithm(config).evolve_algorithm(input_set, targets, gates)
