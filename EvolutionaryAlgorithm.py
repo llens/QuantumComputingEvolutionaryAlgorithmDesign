@@ -42,8 +42,16 @@ class EvolutionaryAlgorithm:
         toolbox.register(
             "evaluate", evaluate_quantum_algorithm, input_set=input_set, target_set=target_set, gates=gates)
         toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-        toolbox.register("select", tools.selTournament, tournsize=3)
+        toolbox.register(
+            "mutate",
+            tools.mutFlipBit,
+            indpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "INDIVIDUAL_SWAP_PROBABILITY"))
+        )
+        toolbox.register(
+            "select",
+            tools.selTournament,
+            tournsize=int(self.config.get_config_value("EvolutionaryAlgorithm", "TOURNAMENT_SIZE"))
+        )
 
         pop = toolbox.population(n=int(self.config.get_config_value("EvolutionaryAlgorithm", "POPULATION")))
         hof = tools.HallOfFame(1)
@@ -56,8 +64,8 @@ class EvolutionaryAlgorithm:
         algorithms.eaSimple(
             pop,
             toolbox,
-            cxpb=0.5,
-            mutpb=0.5,
+            cxpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "BREEDING_PROBABILITY")),
+            mutpb=int(self.config.get_config_value("EvolutionaryAlgorithm", "MUTATION_PROBABILITY")),
             ngen=int(self.config.get_config_value("EvolutionaryAlgorithm", "GENERATIONS")),
             stats=stats,
             halloffame=hof,
