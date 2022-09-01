@@ -19,8 +19,6 @@ class EvolutionaryAlgorithm:
         self.config = config
 
     def evolve_algorithm(self, input_set: ndarray, target_set: ndarray, gates: List[str]) -> None:
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", array.array, typecode='b', fitness=creator.FitnessMax)
 
         toolbox = base.Toolbox()
 

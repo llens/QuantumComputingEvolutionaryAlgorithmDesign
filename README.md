@@ -7,8 +7,6 @@ The Quantum Computer implementation itself is from this project https://github.c
 # Operation.
 The algorithm maps the complete set of quantum gates T, Hadamard, CNOT, and their relative positions as a simple 'DNA', a generation of multiple random quantum algorithm 'DNA' are generated and compared to the desired output quantum state, the best members of this generation are bred (cut and joined together) and mutated (random 'DNA' changes) to create the next generation which is again evaluated.
 
-Example of a 5-qbit algorithm 'DNA'  
-![Alt text](DNA_example.png?raw=true "Optional Title")  
 Gate symbol key:  
 T: T  
 H: Hadamard  
