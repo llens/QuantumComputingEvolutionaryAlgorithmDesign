@@ -67,14 +67,13 @@ def remove_redundant_gate_series(gate_array: ndarray) -> ndarray:
 
 
 def remove_redundant_gate(gate_array: ndarray, idx_1: int, idx_2: int, column_length: int):
-    if gate_array[idx_1][idx_2] == 2 or gate_array[idx_1][idx_2] == 3 or gate_array[idx_1][idx_2] == 4:
-        if idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
-            gate_array[idx_1][idx_2] = 0
-            gate_array[idx_1 - 1][idx_2] = 0
+    if gate_array[idx_1][idx_2] >= 2 and idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
+        gate_array[idx_1][idx_2] = 0
+        gate_array[idx_1 - 1][idx_2] = 0
 
-        if idx_1 < (column_length - 1) and gate_array[idx_1][idx_2] == gate_array[idx_1 + 1][idx_2]:
-            gate_array[idx_1][idx_2] = 0
-            gate_array[idx_1 + 1][idx_2] = 0
+    if gate_array[idx_1][idx_2] >= 2 and idx_1 < (column_length - 1) and gate_array[idx_1][idx_2] == gate_array[idx_1 + 1][idx_2]:
+        gate_array[idx_1][idx_2] = 0
+        gate_array[idx_1 + 1][idx_2] = 0
 
 
 def output_quantum_gates(gate_array: ndarray) -> None:
