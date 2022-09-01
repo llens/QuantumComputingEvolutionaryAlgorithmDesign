@@ -97,14 +97,13 @@ def cnot_two_gate_operation(gate_array: ndarray) -> ndarray:
     row_length = len(gate_array[1])
     for k in range(len(gate_array)):
         for i in range(row_length):
+
             if gate_array[k][i] == 3:
                 if i < row_length - 1:
                     gate_array[k][i + 1] = 0
                 else:
                     gate_array[k][i] = 0
 
-    for k in range(len(gate_array)):
-        for i in range(row_length):
             if gate_array[k][i] == 4:
                 if i > 0:
                     gate_array[k][i - 1] = 4
