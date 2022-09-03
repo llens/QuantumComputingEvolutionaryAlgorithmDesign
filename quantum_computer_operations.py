@@ -67,14 +67,13 @@ def remove_redundant_gate_series(gate_array: ndarray) -> ndarray:
 
 
 def remove_redundant_gate(gate_array: ndarray, idx_1: int, idx_2: int, column_length: int):
-    if gate_array[idx_1][idx_2] == 2 or gate_array[idx_1][idx_2] == 3 or gate_array[idx_1][idx_2] == 4:
-        if idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
-            gate_array[idx_1][idx_2] = 0
-            gate_array[idx_1 - 1][idx_2] = 0
+    if gate_array[idx_1][idx_2] >= 2 and idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
+        gate_array[idx_1][idx_2] = 0
+        gate_array[idx_1 - 1][idx_2] = 0
 
-        if idx_1 < (column_length - 1) and gate_array[idx_1][idx_2] == gate_array[idx_1 + 1][idx_2]:
-            gate_array[idx_1][idx_2] = 0
-            gate_array[idx_1 + 1][idx_2] = 0
+    if gate_array[idx_1][idx_2] >= 2 and idx_1 < (column_length - 1) and gate_array[idx_1][idx_2] == gate_array[idx_1 + 1][idx_2]:
+        gate_array[idx_1][idx_2] = 0
+        gate_array[idx_1 + 1][idx_2] = 0
 
 
 def output_quantum_gates(gate_array: ndarray) -> None:
@@ -97,14 +96,13 @@ def cnot_two_gate_operation(gate_array: ndarray) -> ndarray:
     row_length = len(gate_array[1])
     for k in range(len(gate_array)):
         for i in range(row_length):
+
             if gate_array[k][i] == 3:
                 if i < row_length - 1:
                     gate_array[k][i + 1] = 0
                 else:
                     gate_array[k][i] = 0
 
-    for k in range(len(gate_array)):
-        for i in range(row_length):
             if gate_array[k][i] == 4:
                 if i > 0:
                     gate_array[k][i - 1] = 4
