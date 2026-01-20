@@ -14,7 +14,7 @@ import time
 ## Gates
 ####
 class Gate(object):
-	i_=np.complex(0,1)
+	i_=complex(0,1)
 	## One qubit gates
 	# Hadamard gate
 	H=1./sqrt(2)*np.matrix('1 1; 1 -1') 
@@ -116,7 +116,7 @@ class Gate(object):
 ## States
 ####
 class State(object):
-	i_=np.complex(0,1)
+	i_=complex(0,1)
 	## One qubit states (basis)
 	# standard basis (z)
 	zero_state=np.matrix('1; 0')
@@ -686,7 +686,7 @@ class QuantumComputer(object):
 			['y ','self.apply_gate(Gate.Y,'],
 			['z ','self.apply_gate(Gate.Z,'],
 			]
-		cnot_re=re.compile('^cx (q\[[0-4]\]), (q\[[0-4]\])$')
+		cnot_re=re.compile(r'^cx (q\[[0-4]\]), (q\[[0-4]\])$')
 		for l in lines:
 			l=l.strip()
 			if not l: continue
