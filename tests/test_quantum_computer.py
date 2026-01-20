@@ -98,3 +98,36 @@ def test_apply_two_qubit_gate_CNOT_separate_qubits_becomes_entangled():
     assert qc.qubit_states_equal("q0,q1,q2,q3,q4", State.state_from_string("11000"))
     q0 = qc.qubits.get_quantum_register_containing("q0")
     assert q0.is_entangled()
+
+
+def test_apply_two_qubit_gate_CNOT_already_entangled():
+    qc = QuantumComputer()
+    qc.execute("h q[0]; cx q[0], q[1];")  # Creates a Bell state, entangling q0 and q1
+    q0_reg = qc.qubits.get_quantum_register_containing("q0")
+    q1_reg = qc.qubits.get_quantum_register_containing("q1")
+
+    # Now apply another CNOT between already entangled q0 and q1 (control q0, target q1)
+    qc.apply_two_qubit_gate_CNOT("q0", "q1")
+
+    # Expect the state to be 1/sqrt(2) * (|00> + |10>) for q0,q1 and |000> for q2,q3,q4
+    expected_state_q0q1 = 1/np.sqrt(2) * (np.kron(State.zero_state, State.zero_state) + np.kron(State.one_state, State.zero_state))
+    full_expected_state = np.kron(expected_state_q0q1, np.kron(State.zero_state, np.kron(State.zero_state, State.zero_state)))
+    assert np.allclose(qc.qubit_states_equal("q0,q1,q2,q3,q4", full_expected_state), True)
+
+
+def test_entangle_quantum_registers_already_entangled_groups():
+    qc = QuantumComputer()
+    qc.execute("h q[0]; cx q[0], q[1];")  # q0 and q1 entangled
+    qc.execute("h q[2]; cx q[2], q[3];")  # q2 and q3 entangled
+
+    # Now entangle q1 (part of q0-q1 group) and q2 (part of q2-q3 group)
+    q1_reg = qc.qubits.get_quantum_register_containing("q1")
+    q2_reg = qc.qubits.get_quantum_register_containing("q2")
+    qc.qubits.entangle_quantum_registers(q1_reg, q2_reg)
+
+    # All four q0,q1,q2,q3 should now be in one entangled group
+    # Check that q0 (which was part of the first group) is now entangled
+    q0_reg_after_entangle = qc.qubits.get_quantum_register_containing("q0")
+    assert q0_reg_after_entangle.is_entangled()
+    # Check that the number of qubits in this entangled group is 4
+    assert q0_reg_after_entangle.get_num_qubits() == 4
