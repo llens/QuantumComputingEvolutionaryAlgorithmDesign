@@ -93,7 +93,10 @@ def output_quantum_gates(gate_array: ndarray) -> None:
 
 
 def cnot_two_gate_operation(gate_array: ndarray) -> ndarray:
-    row_length = len(gate_array[1])
+    if gate_array.ndim == 1:
+        gate_array = np.reshape(gate_array, (1, len(gate_array)))
+
+    row_length = gate_array.shape[1]
     for k in range(len(gate_array)):
         for i in range(row_length):
 

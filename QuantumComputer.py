@@ -585,6 +585,9 @@ class QuantumComputer(object):
 
 	def apply_gate(self,gate,on_qubit_name):
 		on_qubit=self.qubits.get_quantum_register_containing(on_qubit_name)
+		if len(on_qubit.get_noop()) == 3: # If it's Bloch coordinates
+			print(f"NOTE: Qubit {on_qubit_name} has Bloch coordinates set. Further gates are ignored.")
+			return
 		if len(on_qubit.get_noop()) > 0:
 			print("NOTE this qubit has been measured previously, there should be no more gates allowed but we are reverting that measurement for consistency with IBM's language")
 			on_qubit.set_state(on_qubit.get_noop())
@@ -620,11 +623,13 @@ class QuantumComputer(object):
 			if first_qubit.get_num_qubits()!=1 or second_qubit.get_num_qubits()!=1:
 				raise Exception("Both qubits are marked as not entangled but one or the other has an entangled state")
 			new_state=Gate.CNOT2_01*combined_state
-			if State.is_fully_separable(new_state):
-				second_qubit.set_state(State.get_second_qubit(new_state))
-			else:
-				self.qubits.entangle_quantum_registers(first_qubit,second_qubit)
-				first_qubit.set_state(new_state)
+			self.qubits.entangle_quantum_registers(first_qubit,second_qubit)
+			# After entangling, first_qubit (or second_qubit, depending on logic in entangle_quantum_registers)
+			# now represents the combined entangled system. We should set its state to the full new_state.
+			# To find the representative after entangle_quantum_registers, we can re-get it from the collection.
+			# Assuming entangle_quantum_registers ensures one of the original refs (first_qubit) is the new canonical:
+			# The set_entangled method in QuantumRegister actually sets the state of the representative.
+			first_qubit.set_state(new_state)
 		else:
 			if not first_qubit.is_entangled_with(second_qubit):
 				# Entangle the state

@@ -77,12 +77,12 @@ def discrete_inputs(gates: List[str], n_inputs: int) -> ndarray:
 
 def discrete_input(gates: List[str]) -> ndarray:
     i = 0
-    inputs = np.empty([])
+    inputs = []
     while i < (2 ** len(gates) / 2):
-        inputs = np.hstack((inputs, discrete_qbit()))
+        inputs.extend(discrete_qbit())
         i += 1
 
-    return inputs
+    return np.array(inputs)
 
 
 def discrete_qbit() -> List[int]:

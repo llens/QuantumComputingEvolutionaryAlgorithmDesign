@@ -1,7 +1,8 @@
 import numpy as np
 
 from quantum_computer_operations import remove_redundant_gate_series, cnot_two_gate_operation, count_blank_rows, \
-    initialise_quantum_computer, quantum_gate_switch, apply_quantum_gates, run_quantum_algorithm
+    initialise_quantum_computer, quantum_gate_switch, apply_quantum_gates, run_quantum_algorithm, \
+    run_quantum_algorithm_over_set
 from QuantumComputer import State, QuantumComputer, Gate, Probability
 
 
@@ -15,6 +16,12 @@ def test_cnot_two_gate_operation():
     gate_array = np.array([[3, 0, 0], [0, 4, 0], [0, 0, 3]])
     expected_array = np.array([[3, 0, 0], [4, 0, 0], [0, 0, 0]])
     assert np.array_equal(cnot_two_gate_operation(gate_array), expected_array)
+
+def test_cnot_two_gate_operation_else_case():
+    gate_array = np.array([[1, 2, 0]])
+    expected_array = np.array([[1, 2, 0]])
+    assert np.array_equal(cnot_two_gate_operation(gate_array), expected_array)
+
 
 def test_count_blank_rows():
     gate_array = np.array([[0, 0, 0], [1, 2, 3], [0, 0, 0]])
@@ -64,3 +71,11 @@ def test_run_quantum_algorithm():
     probabilities = run_quantum_algorithm(input_state, gates, gate_array)
     expected_probabilities = Probability.get_probabilities(State.bell_state)
     assert np.allclose(probabilities, expected_probabilities)
+
+def test_run_quantum_algorithm_over_set():
+    input_set = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])
+    target_set = np.array([[0.5, 0, 0, 0.5], [0.5, 0, 0, 0.5]])
+    gates = ["q0", "q1"]
+    gate_array = np.array([[2, 0], [3, 0]])
+    score, = run_quantum_algorithm_over_set(input_set, target_set, gates, gate_array)
+    assert score == -1.0
