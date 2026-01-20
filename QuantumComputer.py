@@ -328,13 +328,26 @@ class QuantumRegister(object):
 		self.name = name
 		self.idx=None
 		self._noop = [] # after a measurement set this so that we can allow no further operations. Set to Bloch coords if bloch operation performed
+
 	@staticmethod
-	def num_qubits(state):	
-		num_qubits=log(state.shape[0],2)
-		if state.shape[1]!=1 or num_qubits not in [1,2,3,4,5]:
+	def num_qubits(state):
+		# Ensure state is always a 2D column vector (numpy.matrix)
+		state_matrix = np.matrix(state).reshape(-1, 1)
+		
+		# Robustly calculate num_qubits, handling floating point inaccuracies
+		num_qubits_float = np.log2(state_matrix.shape[0])
+		if not np.isclose(num_qubits_float, round(num_qubits_float)):
+			raise Exception("unrecognized state shape - state dimension is not a power of 2")
+		
+		num_qubits = int(round(num_qubits_float))
+
+
+
+		if state_matrix.shape[1]!=1 or not (1 <= num_qubits <= 5):
 			raise Exception("unrecognized state shape")
 		else:
-			return int(num_qubits)
+			return num_qubits
+
 
 	def get_entangled(self):
 		return self._entangled
@@ -427,9 +440,19 @@ class QuantumRegisterCollection(object):
 		if len(first_qubit.get_entangled()) >= len(second_qubit.get_entangled()):
 			self._remove_quantum_register_named(second_qubit.name)
 			first_qubit.set_entangled(new_entangle)
+			# Recompute the combined state for the new entangled group
+			# The states of first_qubit and second_qubit already represent their entire entangled groups.
+			# We combine these two existing group states.
+			combined_state = np.kron(first_qubit.get_state(), second_qubit.get_state())
+			first_qubit.set_state(np.matrix(combined_state).reshape(-1, 1))
 		else:
 			self._remove_quantum_register_named(first_qubit.name)
 			second_qubit.set_entangled(new_entangle)
+			# Recompute the combined state for the new entangled group
+			# The states of first_qubit and second_qubit already represent their entire entangled groups.
+			# We combine these two existing group states.
+			combined_state = np.kron(first_qubit.get_state(), second_qubit.get_state())
+			second_qubit.set_state(np.matrix(combined_state).reshape(-1, 1))
 	def _remove_quantum_register_named(self,name):
 		self._qubits=[qb for qb in self._qubits if qb.name!=name]
 	def is_in_canonical_ordering(self):
