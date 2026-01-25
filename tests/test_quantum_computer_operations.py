@@ -39,14 +39,12 @@ def test_quantum_gate_switch_t_gate():
     qc = QuantumComputer()
     gates = ["q0"]
     qc = quantum_gate_switch(qc, gates, 1, 0)
-    assert qc.qubit_states_equal("q0", Gate.T * State.zero_state)
-
+    assert qc.qubit_states_equal("q0", Gate.T @ State.zero_state)
 def test_quantum_gate_switch_h_gate():
     qc = QuantumComputer()
     gates = ["q0"]
     qc = quantum_gate_switch(qc, gates, 2, 0)
-    assert qc.qubit_states_equal("q0", Gate.H * State.zero_state)
-
+    assert qc.qubit_states_equal("q0", Gate.H @ State.zero_state)
 def test_quantum_gate_switch_cnot_gate():
     qc = QuantumComputer()
     qc.apply_gate(Gate.X, "q0")
@@ -60,7 +58,7 @@ def test_apply_quantum_gates():
     gates = ["q0", "q1"]
     gate_array = np.array([[2, 0], [1, 0]])
     qc = apply_quantum_gates(qc, gates, gate_array)
-    expected_state = Gate.T * Gate.H * State.zero_state
+    expected_state = Gate.T @ Gate.H @ State.zero_state
     assert qc.qubit_states_equal("q0", expected_state)
 
 

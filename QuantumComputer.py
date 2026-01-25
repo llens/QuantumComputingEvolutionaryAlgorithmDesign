@@ -17,11 +17,11 @@ class Gate(object):
 	i_=complex(0,1)
 	## One qubit gates
 	# Hadamard gate
-	H=1./sqrt(2)*np.matrix('1 1; 1 -1') 
+	H=1./sqrt(2)*np.array([[1, 1], [1, -1]], dtype=float) 
 	# Pauli gates
-	X=np.matrix('0 1; 1 0')
-	Y=np.matrix([[0, -i_],[i_, 0]])
-	Z=np.matrix([[1,0],[0,-1]])
+	X=np.array([[0, 1], [1, 0]], dtype=float)
+	Y=np.array([[0, -i_],[i_, 0]])
+	Z=np.array([[1,0],[0,-1]])
 
 	# Defined as part of the Bell state experiment
 	W=1/sqrt(2)*(X+Z)
@@ -30,27 +30,27 @@ class Gate(object):
 	# Other useful gates
 	eye=np.eye(2,2)
 
-	S=np.matrix([[1,0],[0,i_]])
-	Sdagger=np.matrix([[1,0],[0,-i_]]) # convenience Sdagger = S.conjugate().transpose()
+	S=np.array([[1,0],[0,i_]])
+	Sdagger=np.array([[1,0],[0,-i_]]) # convenience Sdagger = S.conjugate().transpose()
 
-	T=np.matrix([[1,0],[0, e**(i_*pi/4.)]])
-	Tdagger=np.matrix([[1,0],[0, e**(-i_*pi/4.)]]) # convenience Tdagger= T.conjugate().transpose()
+	T=np.array([[1,0],[0, e**(i_*pi/4.)]])
+	Tdagger=np.array([[1,0],[0, e**(-i_*pi/4.)]]) # convenience Tdagger= T.conjugate().transpose()
 
 
 	# TODO: for CNOT gates define programatically instead of the more manual way below
 	## Two qubit gates
 	# CNOT Gate (control is qubit 0, target qubit 1), this is the default CNOT gate
-	CNOT2_01=np.matrix('1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0')
+	CNOT2_01=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=float)
 	# control is qubit 1 target is qubit 0 
-	CNOT2_10=np.kron(H,H)*CNOT2_01*np.kron(H,H) #=np.matrix('1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0') 
+	CNOT2_10=np.kron(H,H) @ CNOT2_01 @ np.kron(H,H) #=np.matrix('1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0') 
 
 	# operates on 2 out of 3 entangled qubits, control is first subscript, target second
 	CNOT3_01=np.kron(CNOT2_01,eye)
 	CNOT3_10=np.kron(CNOT2_10,eye)
 	CNOT3_12=np.kron(eye,CNOT2_01)
 	CNOT3_21=np.kron(eye,CNOT2_10)
-	CNOT3_02=np.matrix('1 0 0 0 0 0 0 0; 0 1 0 0 0 0 0 0; 0 0 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 0 1 0 0; 0 0 0 0 1 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 1 0')
-	CNOT3_20=np.matrix('1 0 0 0 0 0 0 0; 0 0 0 0 0 1 0 0; 0 0 1 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 1 0 0 0; 0 1 0 0 0 0 0 0; 0 0 0 0 0 0 1 0; 0 0 0 1 0 0 0 0')
+	CNOT3_02=np.array([[1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 0, 0, 0, 0, 1, 0]], dtype=float)
+	CNOT3_20=np.array([[1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 0, 0, 1, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0]], dtype=float)
 
 	# operates on 2 out of 4 entangled qubits, control is first subscript, target second
 	CNOT4_01=np.kron(CNOT3_01,eye)
@@ -119,34 +119,34 @@ class State(object):
 	i_=complex(0,1)
 	## One qubit states (basis)
 	# standard basis (z)
-	zero_state=np.matrix('1; 0')
-	one_state=np.matrix('0; 1')
+	zero_state=np.array([[1], [0]], dtype=float)
+	one_state=np.array([[0], [1]], dtype=float)
 	# diagonal basis (x)
-	plus_state=1/sqrt(2)*np.matrix('1; 1')
-	minus_state=1/sqrt(2)*np.matrix('1; -1')
+	plus_state=1/sqrt(2)*np.array([[1], [1]], dtype=float)
+	minus_state=1/sqrt(2)*np.array([[1], [-1]], dtype=float)
 	# circular basis (y)
-	plusi_state=1/sqrt(2)*np.matrix([[1],[i_]])    # also known as clockwise arrow state
-	minusi_state=1/sqrt(2)*np.matrix([[1],[-i_]])  # also known as counterclockwise arrow state
+	plusi_state=1/sqrt(2)*np.array([[1],[i_]])    # also known as clockwise arrow state
+	minusi_state=1/sqrt(2)*np.array([[1],[-i_]])  # also known as counterclockwise arrow state
 
 	# 2-qubit states
-	bell_state=1/sqrt(2)*np.matrix('1; 0; 0; 1')
+	bell_state=1/sqrt(2)*np.array([[1], [0], [0], [1]], dtype=float)
 	@staticmethod
 	def change_to_x_basis(state):
-		return Gate.H*state
+		return Gate.H @ state
 
 	@staticmethod
 	def change_to_y_basis(state):
-		return Gate.H*Gate.Sdagger*state
+		return Gate.H @ Gate.Sdagger @ state
 
 	@staticmethod
 	def change_to_w_basis(state):
 		# W=1/sqrt(2)*(X+Z)
-		return Gate.H*Gate.T*Gate.H*Gate.S*state
+		return Gate.H @ Gate.T @ Gate.H @ Gate.S @ state
 
 	@staticmethod
 	def change_to_v_basis(state):
 		# V=1/sqrt(2)*(-X+Z)
-		return Gate.H*Gate.Tdagger*Gate.H*Gate.S*state
+		return Gate.H @ Gate.Tdagger @ Gate.H @ Gate.S @ state
 
 	@staticmethod 
 	def is_fully_separable(qubit_state):
@@ -332,7 +332,7 @@ class QuantumRegister(object):
 	@staticmethod
 	def num_qubits(state):
 		# Ensure state is always a 2D column vector (numpy.matrix)
-		state_matrix = np.matrix(state).reshape(-1, 1)
+		state_matrix = np.array(state).reshape(-1, 1)
 		
 		# Robustly calculate num_qubits, handling floating point inaccuracies
 		num_qubits_float = np.log2(state_matrix.shape[0])
@@ -354,7 +354,7 @@ class QuantumRegister(object):
 	def set_entangled(self,entangled):
 		self._entangled=entangled
 		for qb in self._entangled:
-			qb._state=self._state
+
 			qb._entangled=self._entangled
 	def get_state(self):
 		return self._state
@@ -363,7 +363,6 @@ class QuantumRegister(object):
 		for qb in self._entangled:
 			qb._state=state
 			qb._entangled=self._entangled
-			qb._noop=self._noop
 
 	def get_noop(self):
 		return self._noop
@@ -444,7 +443,7 @@ class QuantumRegisterCollection(object):
 			# The states of first_qubit and second_qubit already represent their entire entangled groups.
 			# We combine these two existing group states.
 			combined_state = np.kron(first_qubit.get_state(), second_qubit.get_state())
-			first_qubit.set_state(np.matrix(combined_state).reshape(-1, 1))
+			first_qubit.set_state(np.array(combined_state).reshape(-1, 1))
 		else:
 			self._remove_quantum_register_named(first_qubit.name)
 			second_qubit.set_entangled(new_entangle)
@@ -452,7 +451,7 @@ class QuantumRegisterCollection(object):
 			# The states of first_qubit and second_qubit already represent their entire entangled groups.
 			# We combine these two existing group states.
 			combined_state = np.kron(first_qubit.get_state(), second_qubit.get_state())
-			second_qubit.set_state(np.matrix(combined_state).reshape(-1, 1))
+			second_qubit.set_state(np.array(combined_state).reshape(-1, 1))
 	def _remove_quantum_register_named(self,name):
 		self._qubits=[qb for qb in self._qubits if qb.name!=name]
 	def is_in_canonical_ordering(self):
@@ -511,18 +510,6 @@ class QuantumComputer(object):
 		entangled_qubit_order=self.qubits.get_entangled_qubit_order()
 		# # We know the idxs run range(5)
 		# # We know if the idxs are contiguous, increasing we are good
-		for get_state_for_qb in get_states_for:
-			for eqb in entangled_qubit_order:
-				eqo=[q.idx for q in eqb]
-				# We know if the idxs are missing a number AND we want to find an idx that lies in there, we must entangle those states
-				if not get_state_for_qb.idx in eqo and get_state_for_qb.idx in range(min(eqo),max(eqo)+1):
-					print("We'll have to entangle the two")
-					# We'll have to entangle the two
-					qb1=self.qubits.get_quantum_register_containing(eqo[0].name)
-					get_state_for_qb.set_state(np.kron(qb.get_state(),qb1.get_state()))
-					self.qubits.entangle_quantum_registers(get_state_for_qb,qb1)
-					return self.qubit_states_equal(name,state)
-
 		# OK, if we reach here, we have all the entanglement we need, and we just need to sort the individual entangled states to match the output order
 		for qubit in self.qubits.get_quantum_registers():
 			if not QuantumRegisterCollection.is_in_increasing_order(qubit.get_entangled()): # all one apart
@@ -618,7 +605,7 @@ class QuantumComputer(object):
 		if not on_qubit.is_entangled():
 			if on_qubit.get_num_qubits()!=1:
 				raise Exception("This qubit is not marked as entangled but it has an entangled state")
-			on_qubit.set_state(gate*on_qubit.get_state())
+			on_qubit.set_state(gate @ on_qubit.get_state())
 		else:
 			if not on_qubit.get_num_qubits()>1:
 				raise Exception("This qubit is marked as entangled but it does not have an entangled state")
@@ -633,7 +620,7 @@ class QuantumComputer(object):
 					entangled_gate=np.kron(entangled_gate,gate)
 				else:
 					entangled_gate=np.kron(entangled_gate,Gate.eye)
-			on_qubit.set_state(entangled_gate*on_qubit.get_state())
+			on_qubit.set_state(entangled_gate @ on_qubit.get_state())
 
 	def apply_two_qubit_gate_CNOT(self,first_qubit_name,second_qubit_name):
 		""" Should work for all combination of qubits"""
@@ -645,7 +632,7 @@ class QuantumComputer(object):
 			combined_state=np.kron(first_qubit.get_state(),second_qubit.get_state())
 			if first_qubit.get_num_qubits()!=1 or second_qubit.get_num_qubits()!=1:
 				raise Exception("Both qubits are marked as not entangled but one or the other has an entangled state")
-			new_state=Gate.CNOT2_01*combined_state
+			new_state=Gate.CNOT2_01 @ combined_state
 			self.qubits.entangle_quantum_registers(first_qubit,second_qubit)
 			# After entangling, first_qubit (or second_qubit, depending on logic in entangle_quantum_registers)
 			# now represents the combined entangled system. We should set its state to the full new_state.
@@ -659,12 +646,21 @@ class QuantumComputer(object):
 				combined_state=np.kron(first_qubit.get_state(),second_qubit.get_state())
 				self.qubits.entangle_quantum_registers(first_qubit,second_qubit)
 			else:
-				# We are ready to do the operation
-				combined_state=first_qubit.get_state()
-			# Time for more meta programming!
-			# Select gate based on indices
-			control_qubit_idx,target_qubit_idx=first_qubit.get_indices(second_qubit)
-			gate_size=QuantumRegister.num_qubits(combined_state)
+								# They are already in the same entangled group.
+								# We need to find the actual positions of the requested qubits within the entangled group.
+								representative_qubit = first_qubit # At this point, first_qubit is the representative of the entangled group.
+								combined_state = representative_qubit.get_state()
+								
+								# Determine control and target indices within the *entangled group*
+								entangled_members = representative_qubit.get_entangled()
+								
+								# Find the actual QuantumRegister objects within the entangled_members list corresponding to the names
+								control_reg = next(q for q in entangled_members if q.name == first_qubit_name)
+								target_reg = next(q for q in entangled_members if q.name == second_qubit_name)
+				
+								control_qubit_idx = entangled_members.index(control_reg)
+								target_qubit_idx = entangled_members.index(target_reg)
+								gate_size=QuantumRegister.num_qubits(combined_state)
 			try:
 				namespace=locals()
 				exec('gate=Gate.CNOT%d_%d%d' %(gate_size,control_qubit_idx,target_qubit_idx),globals(),namespace)
@@ -672,7 +668,7 @@ class QuantumComputer(object):
 			except:
 				print('gate=Gate.CNOT%d_%d%d' %(gate_size,control_qubit_idx,target_qubit_idx))
 				raise Exception("Unrecognized combination of number of qubits")
-			first_qubit.set_state(gate*combined_state)
+			first_qubit.set_state(gate @ combined_state)
 
 				
 
@@ -1613,27 +1609,27 @@ class TestMultiQuantumRegisterStates(unittest.TestCase):
 	def test_basis(self):
 		# Sanity checks
 		# 1-qubit
-		self.assertTrue(np.allclose(State.zero_state+State.one_state,np.matrix('1; 1')))
+		self.assertTrue(np.allclose(State.zero_state+State.one_state,np.array([[1], [1]], dtype=float)))
 		eye=np.eye(2,2)
 		for row,state in enumerate([State.zero_state,State.one_state]):
 			self.assertTrue(np.allclose(state.transpose(),eye[row]))
 		# 2-qubit
-		self.assertTrue(np.allclose(self.two_qubits_00+self.two_qubits_01+self.two_qubits_10+self.two_qubits_11,np.matrix('1; 1; 1; 1')))
+		self.assertTrue(np.allclose(self.two_qubits_00+self.two_qubits_01+self.two_qubits_10+self.two_qubits_11,np.array([[1], [1], [1], [1]], dtype=float)))
 		eye=np.eye(4,4)
 		for row,state in enumerate([self.two_qubits_00,self.two_qubits_01,self.two_qubits_10,self.two_qubits_11]):
 			self.assertTrue(np.allclose(state.transpose(),eye[row]))
 		# 3-qubit
-		self.assertTrue(np.allclose(self.three_qubits_000+self.three_qubits_001+self.three_qubits_010+self.three_qubits_011+self.three_qubits_100+self.three_qubits_101+self.three_qubits_110+self.three_qubits_111,np.matrix('1; 1; 1; 1; 1; 1; 1; 1')))
+		self.assertTrue(np.allclose(self.three_qubits_000+self.three_qubits_001+self.three_qubits_010+self.three_qubits_011+self.three_qubits_100+self.three_qubits_101+self.three_qubits_110+self.three_qubits_111,np.array([[1], [1], [1], [1], [1], [1], [1], [1]], dtype=float)))
 		eye=np.eye(8,8)
 		for row,state in enumerate([self.three_qubits_000,self.three_qubits_001,self.three_qubits_010,self.three_qubits_011,self.three_qubits_100,self.three_qubits_101,self.three_qubits_110,self.three_qubits_111]):
 			self.assertTrue(np.allclose(state.transpose(),eye[row]))
 		# 4-qubit
-		self.assertTrue(np.allclose(self.four_qubits_0000+self.four_qubits_0001+self.four_qubits_0010+self.four_qubits_0011+self.four_qubits_0100+self.four_qubits_0101+self.four_qubits_0110+self.four_qubits_0111+self.four_qubits_1000+self.four_qubits_1001+self.four_qubits_1010+self.four_qubits_1011+self.four_qubits_1100+self.four_qubits_1101+self.four_qubits_1110+self.four_qubits_1111,np.matrix('1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1')))
+		self.assertTrue(np.allclose(self.four_qubits_0000+self.four_qubits_0001+self.four_qubits_0010+self.four_qubits_0011+self.four_qubits_0100+self.four_qubits_0101+self.four_qubits_0110+self.four_qubits_0111+self.four_qubits_1000+self.four_qubits_1001+self.four_qubits_1010+self.four_qubits_1011+self.four_qubits_1100+self.four_qubits_1101+self.four_qubits_1110+self.four_qubits_1111,np.array([[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]], dtype=float)))
 		eye=np.eye(16,16)
 		for row,state in enumerate([self.four_qubits_0000,self.four_qubits_0001,self.four_qubits_0010,self.four_qubits_0011,self.four_qubits_0100,self.four_qubits_0101,self.four_qubits_0110,self.four_qubits_0111,self.four_qubits_1000,self.four_qubits_1001,self.four_qubits_1010,self.four_qubits_1011,self.four_qubits_1100,self.four_qubits_1101,self.four_qubits_1110,self.four_qubits_1111]):
 			self.assertTrue(np.allclose(state.transpose(),eye[row]))
 		# 5-qubit
-		self.assertTrue(np.allclose(self.five_qubits_00000+self.five_qubits_00001+self.five_qubits_00010+self.five_qubits_00011+self.five_qubits_00100+self.five_qubits_00101+self.five_qubits_00110+self.five_qubits_00111+self.five_qubits_01000+self.five_qubits_01001+self.five_qubits_01010+self.five_qubits_01011+self.five_qubits_01100+self.five_qubits_01101+self.five_qubits_01110+self.five_qubits_01111+self.five_qubits_10000+self.five_qubits_10001+self.five_qubits_10010+self.five_qubits_10011+self.five_qubits_10100+self.five_qubits_10101+self.five_qubits_10110+self.five_qubits_10111+self.five_qubits_11000+self.five_qubits_11001+self.five_qubits_11010+self.five_qubits_11011+self.five_qubits_11100+self.five_qubits_11101+self.five_qubits_11110+self.five_qubits_11111,np.matrix('1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1')))
+		self.assertTrue(np.allclose(self.five_qubits_00000+self.five_qubits_00001+self.five_qubits_00010+self.five_qubits_00011+self.five_qubits_00100+self.five_qubits_00101+self.five_qubits_00110+self.five_qubits_00111+self.five_qubits_01000+self.five_qubits_01001+self.five_qubits_01010+self.five_qubits_01011+self.five_qubits_01100+self.five_qubits_01101+self.five_qubits_01110+self.five_qubits_01111+self.five_qubits_10000+self.five_qubits_10001+self.five_qubits_10010+self.five_qubits_10011+self.five_qubits_10100+self.five_qubits_10101+self.five_qubits_10110+self.five_qubits_10111+self.five_qubits_11000+self.five_qubits_11001+self.five_qubits_11010+self.five_qubits_11011+self.five_qubits_11100+self.five_qubits_11101+self.five_qubits_11110+self.five_qubits_11111,np.array([[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]], dtype=float)))
 		eye=np.eye(32,32)
 		for row,state in enumerate([self.five_qubits_00000,self.five_qubits_00001,self.five_qubits_00010,self.five_qubits_00011,self.five_qubits_00100,self.five_qubits_00101,self.five_qubits_00110,self.five_qubits_00111,self.five_qubits_01000,self.five_qubits_01001,self.five_qubits_01010,self.five_qubits_01011,self.five_qubits_01100,self.five_qubits_01101,self.five_qubits_01110,self.five_qubits_01111,self.five_qubits_10000,self.five_qubits_10001,self.five_qubits_10010,self.five_qubits_10011,self.five_qubits_10100,self.five_qubits_10101,self.five_qubits_10110,self.five_qubits_10111,self.five_qubits_11000,self.five_qubits_11001,self.five_qubits_11010,self.five_qubits_11011,self.five_qubits_11100,self.five_qubits_11101,self.five_qubits_11110,self.five_qubits_11111]):
 			self.assertTrue(np.allclose(state.transpose(),eye[row]))
@@ -1693,21 +1689,25 @@ class TestQuantumComputer(unittest.TestCase):
 	def test_apply_gate(self):
 		self.qc.apply_gate(Gate.H*Gate.T*Gate.Sdagger*Gate.Tdagger*Gate.X*Gate.Y,"q0")
 		self.assertTrue(self.qc.qubit_states_equal("q0",Gate.H*Gate.T*Gate.Sdagger*Gate.Tdagger*Gate.X*Gate.Y*State.zero_state))
-		# Some tests on entangled gates, breaking abstraction but will improve testing soon
+		# Some tests on entangled gates
 		self.qc.reset()
 		q0=self.qc.qubits.get_quantum_register_containing("q0")
 		q1=self.qc.qubits.get_quantum_register_containing("q1")
-		q0.set_state(np.kron(State.zero_state,State.zero_state))
+		# Initially q0 and q1 are in zero_state.
+		# Entangle them. This will combine their states into a 2-qubit state on q0.
 		self.qc.qubits.entangle_quantum_registers(q0,q1)
+		# Now, the 'q0' quantum register effectively holds the 2-qubit state.
+		# The state should be |00>
+		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'00')
 
 		# We will test applying the gate to qubits one and two
-		self.qc.apply_gate(Gate.X,"q0")
+		self.qc.apply_gate(Gate.X,"q0") # Applies X to the first qubit of the entangled pair
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'10')
 		self.qc.apply_gate(Gate.X,"q0")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'00')
 
 		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q1").name,"q1")
-		self.qc.apply_gate(Gate.X,"q1")
+		self.qc.apply_gate(Gate.X,"q1") # Applies X to the second qubit of the entangled pair
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'01')
 		self.qc.apply_gate(Gate.X,"q1")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'00')
@@ -1717,20 +1717,20 @@ class TestQuantumComputer(unittest.TestCase):
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'11')
 
 		# Now testing on 3 qubits
-		q3=self.qc.qubits.get_quantum_register_containing("q3")
-		q0.set_state(np.kron(np.kron(State.zero_state,State.zero_state),State.zero_state))
-		self.qc.qubits.entangle_quantum_registers(q0,q3)
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q1").name,"q1")
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q3").name,"q3")
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q0").name,"q0")
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q2").name,"q2")
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q4").name,"q4")
+		self.qc.reset() # Reset to default 5 unentangled qubits
+		q0=self.qc.qubits.get_quantum_register_containing("q0")
+		q1=self.qc.qubits.get_quantum_register_containing("q1")
+		q2=self.qc.qubits.get_quantum_register_containing("q2")
+		
+		# Entangle q0, q1, q2
+		self.qc.qubits.entangle_quantum_registers(q0,q1) # q0 now represents (q0,q1) state
+		self.qc.qubits.entangle_quantum_registers(q0,q2) # q0 now represents (q0,q1,q2) state
+		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'000')
 
 		self.qc.apply_gate(Gate.X,"q0")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'100')
 		self.qc.apply_gate(Gate.X,"q0")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'000')
-		self.assertEqual(self.qc.qubits.get_quantum_register_containing("q1").name,"q1")
 		self.qc.apply_gate(Gate.X,"q1")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'010')
 		self.qc.apply_gate(Gate.X,"q1")
@@ -1739,14 +1739,19 @@ class TestQuantumComputer(unittest.TestCase):
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'100')
 		self.qc.apply_gate(Gate.X,"q1")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'110')
-		self.qc.apply_gate(Gate.X,"q3")
+		self.qc.apply_gate(Gate.X,"q2")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'111')
 		self.qc.apply_gate(Gate.X,"q1")
 		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q0").get_state()),'101')
+		
+		# Test isolated qubit
+		self.qc.reset()
+		q4=self.qc.qubits.get_quantum_register_containing("q4")
+		self.assertEqual(State.string_from_state(q4.get_state()),'0')
 		self.qc.apply_gate(Gate.X,"q4")
-		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q4").get_state()),'1')
+		self.assertEqual(State.string_from_state(q4.get_state()),'1')
 		self.qc.apply_gate(Gate.X,"q4")
-		self.assertEqual(State.string_from_state(self.qc.qubits.get_quantum_register_containing("q4").get_state()),'0')
+		self.assertEqual(State.string_from_state(q4.get_state()),'0')
 
 
 	def test_apply_two_qubit_gate_CNOT_target(self):

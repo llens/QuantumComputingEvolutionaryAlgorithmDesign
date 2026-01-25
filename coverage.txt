@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /home/tom/git/QuantumComputingEvolutionaryAlgorithmDesign
+configfile: pytest.ini
+plugins: cov-5.0.0
+collected 71 items                                                                                                                                                      
+
+tests/test_config.py .                                                                                                                                            [  1%]
+tests/test_evolutionary_algorithm.py ...                                                                                                                          [  5%]
+tests/test_gates_and_states.py .......                                                                                                                            [ 15%]
+tests/test_quantum_computer.py ......................................                                                                                             [ 69%]
+tests/test_quantum_computer_operations.py ...........                                                                                                             [ 84%]
+tests/test_quantum_computing_algorithm_building_script.py .                                                                                                       [ 85%]
+tests/test_target_generation.py ..........                                                                                                                        [100%]
+
+=========================================================================== warnings summary ============================================================================
+tests/test_evolutionary_algorithm.py::test_evolve_algorithm
+  /home/tom/git/QuantumComputingEvolutionaryAlgorithmDesign/venv/lib/python3.13/site-packages/deap/creator.py:185: RuntimeWarning: A class named 'FitnessMax' has already been created and it will be overwritten. Consider deleting previous creation of that class or rename it.
+    warnings.warn("A class named '{0}' has already been created and it "
+
+tests/test_evolutionary_algorithm.py::test_evolve_algorithm
+  /home/tom/git/QuantumComputingEvolutionaryAlgorithmDesign/venv/lib/python3.13/site-packages/deap/creator.py:185: RuntimeWarning: A class named 'Individual' has already been created and it will be overwritten. Consider deleting previous creation of that class or rename it.
+    warnings.warn("A class named '{0}' has already been created and it "
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.13.7-final-0 -----------
+Name                                                        Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------------------
+Config.py                                                       8      0   100%
+EvolutionaryAlgorithm.py                                       40      0   100%
+QuantumComputer.py                                           1269    697    45%   188, 262-265, 282-283, 293, 381-385, 402-412, 448-454, 483-485, 509, 518-551, 565, 589-594, 599-600, 602-604, 607, 610-623, 630, 634, 646-647, 668-670, 682, 1426-1428, 1430-1432, 1434, 1436-1437, 1441, 1443, 1445-1449, 1451-1455, 1457-1461, 1464-1468, 1472, 1474, 1476-1485, 1489, 1491, 1494, 1497-1502, 1507, 1509, 1511-1514, 1518, 1520, 1524-1532, 1536-1606, 1608, 1612-1635, 1638-1663, 1666-1674, 1677-1683, 1687-1688, 1690-1754, 1758-1769, 1773-1787, 1792-1840, 1845-1911, 1916-2009, 2014-2021, 2024-2030, 2034-2040, 2045-2051, 2056-2065, 2068-2073, 2076-2081, 2084-2089, 2093-2098, 2101-2106, 2109-2114, 2117-2122, 2125-2130, 2133-2138, 2141-2146, 2149-2154, 2157-2163, 2166-2171, 2175-2180, 2183-2189, 2193-2198, 2201-2206, 2209-2214, 2217-2222, 2225-2230, 2232-2233, 2236
+quantum_computer_operations.py                                117     16    86%   27-28, 50-55, 71-72, 89-90, 97, 114, 155, 170
+quantum_computing_algorithm_building_script.py                 16      1    94%   26
+target_generation.py                                           67      2    97%   25-26
+tests/conftest.py                                               0      0   100%
+tests/test_config.py                                            4      0   100%
+tests/test_evolutionary_algorithm.py                           31      0   100%
+tests/test_gates_and_states.py                                 24      0   100%
+tests/test_quantum_computer.py                                252      1    99%   337
+tests/test_quantum_computer_operations.py                      60      0   100%
+tests/test_quantum_computing_algorithm_building_script.py      24      1    96%   53
+tests/test_target_generation.py                                56      0   100%
+-----------------------------------------------------------------------------------------
+TOTAL                                                        1968    718    64%
+
+==================================================================== 71 passed, 2 warnings in 0.89s =====================================================================
