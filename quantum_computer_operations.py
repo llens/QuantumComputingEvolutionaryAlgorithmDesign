@@ -2,42 +2,34 @@ from typing import List, Tuple
 
 import numpy as np
 from numpy import ndarray
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
 
-from QuantumComputer import QuantumComputer, Gate, Probability
-
-
-# Quantum Gate to Number Map:
-# Identity: 0
-# T: 1
-# Hadamard: 2
-# CNOT: 3
+from QuantumComputer import QuantumComputer
 
 
-def quantum_gate_switch(quantum_computer: QuantumComputer, gates: List[str], array_value: complex, index: int) \
-        -> QuantumComputer:
+def quantum_gate_switch(qc: QuantumCircuit, array_value: complex, index: int, gates: List[str]):
+    num_qubits = qc.num_qubits
     match array_value:
-        case 1:
-            quantum_computer.apply_gate(Gate.T, gates[index])
-        case 2:
-            quantum_computer.apply_gate(Gate.H, gates[index])
-        case 3:
-            if index < len(gates):
-                quantum_computer.apply_two_qubit_gate_CNOT(gates[index], gates[index + 1])
+        case 1:  # T gate
+            qc.t(index)
+        case 2:  # Hadamard gate
+            qc.h(index)
+        case 3:  # CNOT gate
+            if index + 1 < num_qubits:
+                qc.cx(index, index + 1)
         case 4:
             if index > 0:
-                quantum_computer.apply_two_qubit_gate_CNOT(gates[index - 1], gates[index])
+                qc.cx(index -1, index)
 
-    return quantum_computer
-
-
-def apply_quantum_gates(quantum_computer: QuantumComputer, gates: List[str], gate_array: ndarray) -> QuantumComputer:
+def apply_quantum_gates(qc: QuantumCircuit, gates: List[str], gate_array: ndarray) -> QuantumCircuit:
     gate_array = remove_redundant_gate_series(cnot_two_gate_operation(gate_array))
 
     for k in range(len(gate_array)):
         for i in range(len(gate_array[k])):
-            quantum_computer = quantum_gate_switch(quantum_computer, gates, gate_array[k][i], i)
+            quantum_gate_switch(qc, gate_array[k][i], i, gates)
 
-    return quantum_computer
+    return qc
 
 
 def quantum_gate_output_switch(array_value: complex) -> str:
@@ -65,7 +57,6 @@ def remove_redundant_gate_series(gate_array: ndarray) -> ndarray:
 
     return gate_array
 
-
 def remove_redundant_gate(gate_array: ndarray, idx_1: int, idx_2: int, column_length: int):
     if gate_array[idx_1][idx_2] >= 2 and idx_1 > 0 and gate_array[idx_1][idx_2] == gate_array[idx_1 - 1][idx_2]:
         gate_array[idx_1][idx_2] = 0
@@ -91,7 +82,6 @@ def output_quantum_gates(gate_array: ndarray) -> None:
 
         print(output_string)
 
-
 def cnot_two_gate_operation(gate_array: ndarray) -> ndarray:
     if gate_array.ndim == 1:
         gate_array = np.reshape(gate_array, (1, len(gate_array)))
@@ -114,51 +104,39 @@ def cnot_two_gate_operation(gate_array: ndarray) -> ndarray:
                     gate_array[k][i] = 0
     return gate_array
 
-
 def run_quantum_algorithm(input_state: ndarray, gates: List[str], gate_array: ndarray) -> ndarray:
-    quantum_computer = initialise_quantum_computer(input_state, gates)
+    qc = initialise_quantum_circuit(input_state, gates)
 
-    quantum_computer = apply_quantum_gates(quantum_computer, gates, gate_array)
+    qc = apply_quantum_gates(qc, gates, gate_array)
 
-    return measure_quantum_output(quantum_computer, gates)
+    return measure_quantum_output(qc)
 
+def initialise_quantum_circuit(input_state: ndarray, gates: List[str]) -> QuantumCircuit:
+    num_qubits = len(gates)
+    qc = QuantumCircuit(num_qubits, num_qubits)
 
-def initialise_quantum_computer(input_state: ndarray, gates: List[str]) -> QuantumComputer:
-    quantum_computer = QuantumComputer()
+    for i, state_val in enumerate(input_state):
+        if state_val == 1 and i < num_qubits:
+            qc.x(i)
 
-    gate_length = len(gates)
+    return qc
 
-    if input_state[1] == 1:
-        quantum_computer.apply_gate(Gate.X, "q0")
+def measure_quantum_output(qc: QuantumCircuit) -> ndarray:
+    num_qubits = qc.num_qubits
+    qc.measure(range(num_qubits), range(num_qubits))
+    
+    simulator = AerSimulator()
+    result = simulator.run(qc, shots=1, memory=True).result()
+    measured_state_str = result.get_memory()[0]
+    
+    # Convert the measured state string (e.g., '010') to a probability vector
+    probabilities = np.zeros(2**num_qubits)
+    measured_index = int(measured_state_str, 2)
+    probabilities[measured_index] = 1.0
+    
+    return probabilities
 
-    if gate_length > 1 and input_state[3] == 1:
-        quantum_computer.apply_gate(Gate.X, "q1")
-
-    if gate_length > 2 and input_state[5] == 1:
-        quantum_computer.apply_gate(Gate.X, "q2")
-
-    if gate_length > 3 and input_state[7] == 1:
-        quantum_computer.apply_gate(Gate.X, "q3")
-
-    if gate_length > 4 and input_state[9] == 1:
-        quantum_computer.apply_gate(Gate.X, "q4")
-
-    return quantum_computer
-
-
-def measure_quantum_output(quantum_computer: QuantumComputer, gates: List[str]) -> ndarray:
-    state = quantum_computer.qubits.get_quantum_register_containing(gates[0]).get_state()
-    probability = Probability.get_probabilities(state)
-
-    # Remove any solutions that are not fully entangled due to input/ output requirements.
-    if len(probability) != 2 ** len(gates):
-        probability = np.empty((2 ** len(gates),)) * np.nan
-
-    return np.asarray(probability)
-
-
-def run_quantum_algorithm_over_set(input_set: ndarray, target_set: ndarray, gates: List[str], gate_array: ndarray) \
-        -> Tuple[float]:
+def run_quantum_algorithm_over_set(input_set: ndarray, target_set: ndarray, gates: List[str], gate_array: ndarray) -> Tuple[float]:
     probabilities = np.zeros((len(input_set), 2 ** len(gates)))
 
     for i in range(len(input_set)):
@@ -173,7 +151,6 @@ def run_quantum_algorithm_over_set(input_set: ndarray, target_set: ndarray, gate
         score /= (1.0 + count_blank_rows(gate_array))
 
     return float(score),
-
 
 def count_blank_rows(gate_array: ndarray) -> int:
     blank_counter = 0
