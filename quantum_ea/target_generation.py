@@ -22,7 +22,7 @@ def setup_example_problem(example: ExampleType, num_qubits: int, input_size: int
         case ExampleType.Fourier:
             input_set = continuous_inputs(num_qubits, input_size)
         case _:
-            ValueError("No mapping found for given example type.")
+            raise ValueError("No mapping found for given example type.")
 
     targets = np.zeros(input_set.shape) + np.zeros(input_set.shape) * 1j
 
@@ -47,7 +47,10 @@ def flip_targets(input_arr: ndarray) -> ndarray:
 
 
 def one_over_targets(input_arr: ndarray) -> ndarray:
-    return np.divide(np.ones(input_arr.shape), input_arr)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        result = np.divide(np.ones(input_arr.shape), input_arr)
+    result[~np.isfinite(result)] = 0.0
+    return result
 
 
 def fourier_targets(input_arr: ndarray) -> ndarray:
@@ -55,23 +58,11 @@ def fourier_targets(input_arr: ndarray) -> ndarray:
 
 
 def continuous_inputs(num_qubits: int, n_inputs: int) -> ndarray:
-    i = 1
-    input_arr = continuous_input(num_qubits)
-    while i < n_inputs:
-        input_arr = np.vstack((input_arr, continuous_input(num_qubits)))
-        i += 1
-
-    return input_arr
+    return np.vstack([continuous_input(num_qubits) for _ in range(n_inputs)])
 
 
 def discrete_inputs(num_qubits: int, n_inputs: int) -> ndarray:
-    i = 1
-    input_arr = discrete_input(num_qubits)
-    while i < n_inputs:
-        input_arr = np.vstack((input_arr, discrete_input(num_qubits)))
-        i += 1
-
-    return input_arr
+    return np.vstack([discrete_input(num_qubits) for _ in range(n_inputs)])
 
 
 def discrete_input(num_qubits: int) -> ndarray:

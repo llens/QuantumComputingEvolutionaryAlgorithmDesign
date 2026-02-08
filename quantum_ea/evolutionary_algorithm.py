@@ -1,5 +1,4 @@
 import random
-import multiprocessing
 from typing import Callable, List, Optional
 
 import numpy as np
@@ -33,12 +32,9 @@ class EvolutionaryAlgorithm:
         self.config = config
         self.evaluate_fn = evaluate_fn
 
-    def evolve_algorithm(self, input_set: ndarray, target_set: ndarray, num_qubits: int) -> None:
+    def evolve_algorithm(self, input_set: ndarray, target_set: ndarray, num_qubits: int) -> tuple[ndarray, float]:
         toolbox = base.Toolbox()
 
-        pool = multiprocessing.Pool()
-
-        toolbox.register("map", pool.map)
         toolbox.register("attr_bool", random.randint, 0, 4)
 
         toolbox.register(
@@ -84,7 +80,11 @@ class EvolutionaryAlgorithm:
             halloffame=hof,
             verbose=True)
 
-        print("Best individual:")
-        output_quantum_gates(dna_to_gates(list(hof[0]), num_qubits))
+        best_gates = dna_to_gates(list(hof[0]), num_qubits)
 
-        run_quantum_algorithm_over_set(input_set, target_set, num_qubits, dna_to_gates(list(hof[0]), num_qubits))
+        print("Best individual:")
+        output_quantum_gates(best_gates)
+
+        best_fitness, = run_quantum_algorithm_over_set(input_set, target_set, num_qubits, best_gates)
+
+        return best_gates, best_fitness

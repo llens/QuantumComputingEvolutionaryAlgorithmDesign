@@ -1,6 +1,2 @@
 deap
 numpy
-pytest==8.2.2
-pytest-cov==5.0.0
-qiskit
-qiskit-aer

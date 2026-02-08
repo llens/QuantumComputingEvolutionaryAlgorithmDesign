@@ -19,16 +19,8 @@ def quantum_gate_output_switch(array_value: complex) -> str:
 
 
 def output_quantum_gates(gate_array: ndarray) -> None:
-    for k in range(len(gate_array)):
+    for row in gate_array:
         output_string = ''
-        i = 0
-
-        while i < len(gate_array[k]):
-            if gate_array[k][i] < GateType.CNOT_DOWN:
-                output_string += '     ' + quantum_gate_output_switch(gate_array[k][i])
-                i += 1
-            else:
-                output_string += '     ' + quantum_gate_output_switch(gate_array[k][i])
-                i += 2
-
+        for gate_val in row:
+            output_string += '     ' + quantum_gate_output_switch(gate_val)
         print(output_string)
