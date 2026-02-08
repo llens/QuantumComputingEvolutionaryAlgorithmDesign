@@ -12,16 +12,15 @@ class ExampleType(Enum):
     Fourier = "fourier"
 
 
-def setup_example_problem(example: ExampleType, gates: List[str], input_size: int) -> tuple[ndarray, ndarray]:
-    # Sum of probabilities exceeds ones as not yet entangled.
+def setup_example_problem(example: ExampleType, num_qubits: int, input_size: int) -> tuple[ndarray, ndarray]:
     input_set = np.empty([])
     match example:
         case ExampleType.Flip:
-            input_set = discrete_inputs(gates, input_size)
+            input_set = discrete_inputs(num_qubits, input_size)
         case ExampleType.Inverse:
-            input_set = continuous_inputs(gates, input_size)
+            input_set = continuous_inputs(num_qubits, input_size)
         case ExampleType.Fourier:
-            input_set = continuous_inputs(gates, input_size)
+            input_set = continuous_inputs(num_qubits, input_size)
         case _:
             ValueError("No mapping found for given example type.")
 
@@ -55,30 +54,30 @@ def fourier_targets(input_arr: ndarray) -> ndarray:
     return np.fft.fft(input_arr)
 
 
-def continuous_inputs(gates: List[str], n_inputs: int) -> ndarray:
+def continuous_inputs(num_qubits: int, n_inputs: int) -> ndarray:
     i = 1
-    input_arr = continuous_input(gates)
+    input_arr = continuous_input(num_qubits)
     while i < n_inputs:
-        input_arr = np.vstack((input_arr, continuous_input(gates)))
+        input_arr = np.vstack((input_arr, continuous_input(num_qubits)))
         i += 1
 
     return input_arr
 
 
-def discrete_inputs(gates: List[str], n_inputs: int) -> ndarray:
+def discrete_inputs(num_qubits: int, n_inputs: int) -> ndarray:
     i = 1
-    input_arr = discrete_input(gates)
+    input_arr = discrete_input(num_qubits)
     while i < n_inputs:
-        input_arr = np.vstack((input_arr, discrete_input(gates)))
+        input_arr = np.vstack((input_arr, discrete_input(num_qubits)))
         i += 1
 
     return input_arr
 
 
-def discrete_input(gates: List[str]) -> ndarray:
+def discrete_input(num_qubits: int) -> ndarray:
     i = 0
     inputs = []
-    while i < (2 ** len(gates) / 2):
+    while i < (2 ** num_qubits / 2):
         inputs.extend(discrete_qbit())
         i += 1
 
@@ -91,7 +90,7 @@ def discrete_qbit() -> List[int]:
     return [temp, 1 - temp]
 
 
-def continuous_input(gates: List[str]) -> ndarray:
-    inputs: ndarray = np.random.uniform(0, 2, 2 ** len(gates)) + np.random.uniform(0, 2, 2 ** len(gates)) * 1j
+def continuous_input(num_qubits: int) -> ndarray:
+    inputs: ndarray = np.random.uniform(0, 2, 2 ** num_qubits) + np.random.uniform(0, 2, 2 ** num_qubits) * 1j
     inputs /= sum(inputs)
     return inputs
