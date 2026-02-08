@@ -49,3 +49,8 @@ def count_blank_rows(gate_array: ndarray) -> int:
             blank_counter += 1
 
     return blank_counter
+
+
+def count_non_identity_gates(gate_array: ndarray) -> int:
+    """Count the number of non-IDENTITY gates in a gate array."""
+    return int(np.count_nonzero(gate_array))
