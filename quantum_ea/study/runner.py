@@ -101,3 +101,55 @@ class ExperimentRunner:
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
         print(f"Results saved to {path}")
+
+    def run_scaling(self) -> dict[int, list[AggregatedMetrics]]:
+        """Run experiments across multiple qubit counts.
+
+        Returns results grouped by qubit count.
+        """
+        results_by_qubits: dict[int, list[AggregatedMetrics]] = {}
+
+        for nq in self.config.qubit_counts:
+            print(f"\n--- Qubit count: {nq} ---")
+            all_trials: dict[tuple[str, str], list[TrialMetrics]] = defaultdict(list)
+
+            for problem_name in self.config.problem_names:
+                factory = _PROBLEM_FACTORIES[problem_name]
+                problem = factory(nq)
+
+                for optimizer in self.config.optimizers:
+                    for trial in range(self.config.num_trials):
+                        seed = self.config.base_seed + trial
+                        clear_fitness_cache()
+
+                        print(
+                            f"  {nq}q: {problem_name} / {optimizer.name} / trial {trial + 1}"
+                        )
+
+                        result = optimizer.optimize(
+                            input_set=problem.input_set,
+                            target_set=problem.target_set,
+                            num_qubits=problem.num_qubits,
+                            time_steps=problem.recommended_time_steps,
+                            evaluation_budget=self.config.evaluation_budget,
+                            seed=seed,
+                        )
+
+                        metrics = TrialMetrics(
+                            problem_name=problem_name,
+                            optimizer_name=optimizer.name,
+                            trial=trial,
+                            fitness=result.best_fitness,
+                            total_evaluations=result.total_evaluations,
+                            wall_clock_seconds=result.wall_clock_seconds,
+                            circuit_complexity=result.circuit_complexity,
+                            fitness_history=result.fitness_history,
+                        )
+                        all_trials[(problem_name, optimizer.name)].append(metrics)
+
+            aggregated = []
+            for key in all_trials:
+                aggregated.append(aggregate_trials(all_trials[key]))
+            results_by_qubits[nq] = aggregated
+
+        return results_by_qubits

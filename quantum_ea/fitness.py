@@ -54,3 +54,13 @@ def count_blank_rows(gate_array: ndarray) -> int:
 def count_non_identity_gates(gate_array: ndarray) -> int:
     """Count the number of non-IDENTITY gates in a gate array."""
     return int(np.count_nonzero(gate_array))
+
+
+def count_active_depth(gate_array: ndarray) -> int:
+    """Count time steps with at least one non-identity gate."""
+    return int(np.any(gate_array != 0, axis=1).sum())
+
+
+def count_cnot_gates(gate_array: ndarray) -> int:
+    """Count CNOT_DOWN and CNOT_UP gates."""
+    return int(np.isin(gate_array, [3, 4]).sum())

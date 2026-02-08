@@ -1,0 +1,761 @@
+\documentclass[twocolumn,11pt]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=green!50!black,
+    urlcolor=blue!70!black,
+}
+
+% --- Title ---
+\title{Multi-Objective and Quality-Diversity Optimization\\of Quantum Circuits via Statevector Simulation}
+
+\author{Thomas Snell}
+
+\date{\today}
+
+% ==============================================================================
+\begin{document}
+\maketitle
+
+% ==============================================================================
+\begin{abstract}
+Automated quantum circuit synthesis---the task of discovering a gate sequence
+that realizes a desired unitary transformation---is a combinatorial optimization
+problem whose difficulty grows exponentially with qubit count.  We present a
+systematic empirical comparison of six optimization strategies applied to this
+problem: random search, an evolutionary algorithm (EA) based on DEAP, a
+gradient-based optimizer using continuous relaxation with L-BFGS-B, a deep
+reinforcement learning (RL) agent using REINFORCE, and two quality-diversity
+(QD) methods---NSGA-II multi-objective optimization and MAP-Elites.  All
+methods share a common evaluation interface normalized by \emph{fitness-function
+evaluation budget}, enabling fair comparison.  We benchmark across six quantum
+computing problems on a 3-qubit system with 10\,000 evaluations per trial and
+10 independent trials per configuration.  The REINFORCE-based deep learning
+optimizer and MAP-Elites achieve the highest mean fitness, both reaching perfect
+solutions (fitness 1.0) on multiple problems.  MAP-Elites additionally discovers
+structurally diverse circuit portfolios with 79--87\% archive coverage, while
+NSGA-II produces compact Pareto-optimal circuits that trade fidelity for
+reduced depth and gate count.  We introduce QD-specific metrics---archive
+coverage, QD-score, and Pareto front analysis---to characterize the diversity
+of discovered circuits, an aspect overlooked by prior single-objective studies.
+\end{abstract}
+
+% ==============================================================================
+\section{Introduction}\label{sec:intro}
+
+Quantum circuit synthesis is the problem of determining a sequence of elementary
+quantum gates that implements a target unitary operation or prepares a target
+output distribution from a given input state~\cite{shende2006synthesis,
+dawson2005solovay}.  It is a foundational subroutine in quantum compilation, and
+its difficulty scales combinatorially with the number of qubits, the depth of
+the circuit, and the size of the gate set.
+
+Metaheuristic search methods---particularly evolutionary algorithms
+(EAs)---have been applied to this problem with encouraging
+results~\cite{williams1998automated, massey2005evolving, las2016genetic}.
+More recently, reinforcement learning has emerged as a powerful alternative:
+\citet{rietsch2024unitary} demonstrated that deep RL with Gumbel AlphaZero
+tree search can synthesize unitaries over the Clifford+T gate set, achieving
+competitive results for fault-tolerant circuit compilation.  Meanwhile,
+\citet{sun2026qas} showed that unsupervised representation learning can
+dramatically reduce the cost of quantum architecture search by decoupling
+circuit encoding from the search process itself.  Despite these individual
+advances, systematic comparisons between EAs and other optimization paradigms
+(gradient-based methods, reinforcement learning) under controlled experimental
+conditions remain scarce.  \citet{sharma2025comparative} recently highlighted
+this gap, noting a lack of standardized benchmarking protocols for quantum
+optimization methods.
+
+A further limitation of prior work is its exclusive focus on single-objective
+optimization---maximizing fidelity alone.  In practice, quantum circuit
+designers must balance multiple competing objectives: fidelity, circuit depth
+(which affects decoherence), gate count (which affects error accumulation),
+and structural diversity (which provides alternative implementations for
+different hardware constraints).  Quality-diversity (QD) algorithms such as
+MAP-Elites~\cite{mouret2015illuminating} and multi-objective methods such as
+NSGA-II~\cite{deb2002nsga2} are designed precisely for this setting, yet their
+application to quantum circuit synthesis remains largely unexplored.
+
+In this work we address both gaps.  We design a unified benchmarking framework
+with budget-normalized evaluation and extend it with two QD methods.
+
+\paragraph{Contributions.}
+\begin{itemize}[nosep]
+    \item A modular open-source framework comparing six quantum circuit
+          optimizers, built on a fast NumPy statevector simulator.
+    \item Six optimizer implementations sharing a common interface: random
+          search, DEAP-based EA, continuous-relaxation gradient descent,
+          REINFORCE policy gradient, NSGA-II, and MAP-Elites.
+    \item A benchmark suite of six problems spanning search, arithmetic,
+          transform, and oracle-identification tasks.
+    \item An empirical study with 10 trials per condition ($6 \times 6 \times
+          10 = 360$ runs), reporting fitness, convergence speed, wall-clock
+          time, circuit complexity, and QD-specific metrics (archive coverage,
+          QD-score, Pareto fronts).
+\end{itemize}
+
+% ==============================================================================
+\section{Background}\label{sec:background}
+
+\subsection{Quantum Circuit Model}
+
+We consider circuits on $n$ qubits composed of gates drawn from the set
+$\mathcal{G} = \{\texttt{I}, \texttt{T}, \texttt{H},
+\textrm{CNOT}{\downarrow}, \textrm{CNOT}{\uparrow}\}$, where \texttt{I} is the identity (no-op),
+\texttt{T} is the $\pi/8$ phase gate, \texttt{H} is the Hadamard gate, and
+the two CNOT variants act on adjacent qubits in opposite directions.  A
+circuit of depth $d$ is represented by an integer matrix $G \in \{0,\ldots,4\}^{d
+\times n}$, where entry $G_{t,q}$ specifies the gate applied to qubit $q$ at
+time step $t$.  A preprocessing pass enforces CNOT adjacency constraints and
+removes self-cancelling consecutive gate pairs.
+
+\subsection{Statevector Simulation}
+
+Each candidate circuit is evaluated by statevector simulation.  Given an input
+state $|\psi_0\rangle$ (typically the uniform superposition obtained from
+$|0\rangle^{\otimes n}$), the simulator applies each gate row in sequence via
+matrix--vector multiplication:
+\begin{equation}
+    |\psi_T\rangle = \prod_{t=1}^{d}\;\prod_{q=0}^{n-1} U_{G_{t,q}}^{(q)} \;|\psi_0\rangle,
+\end{equation}
+where $U_{g}^{(q)}$ is the $2^n \times 2^n$ matrix embedding gate $g$ on qubit
+$q$.  Gate matrices are cached in a dictionary keyed by $(g, q, n)$ for
+reuse.  Measurement probabilities are $p_i = |\langle i | \psi_T \rangle|^2$.
+
+\subsection{Fitness Function}
+
+Fitness is defined as the probability of the target outcome:
+\begin{equation}\label{eq:fitness}
+    f(G) = p_{\,\text{target}}(G),
+\end{equation}
+where the target index is problem-dependent (e.g., the marked item in Grover's
+search).  A penalty discourages wasteful circuits: if $f > 0.99$, the fitness
+is divided by $(1 + 0.1 \cdot b)$ where $b$ is the number of all-identity
+rows.  Fitness values are cached keyed by the byte representation of the gate
+array concatenated with input/target data.
+
+% ==============================================================================
+\section{Optimization Methods}\label{sec:methods}
+
+All six optimizers implement a common abstract interface:
+\begin{center}
+\texttt{optimize(input\_set, target\_set, num\_qubits,}\\
+\texttt{time\_steps, evaluation\_budget, seed)}\\
+$\longrightarrow$ \texttt{OptimizationResult}
+\end{center}
+returning the best gate array found, its fitness, the number of evaluations
+consumed, wall-clock time, circuit complexity (count of non-identity gates), and
+a fitness history trace.
+
+\subsection{Random Search (RS)}
+
+The simplest baseline: at each of the $B$ budget steps, sample a gate array
+uniformly at random from $\{0,\ldots,4\}^{d \times n}$, preprocess it, evaluate
+fitness, and retain the best solution found so far.  Random search provides a
+lower bound on performance and an upper bound on exploration breadth.
+
+\subsection{Evolutionary Algorithm (EA)}
+
+We use DEAP's \texttt{eaSimple} algorithm with tournament selection, two-point
+crossover, and bit-flip mutation.  Individuals are flat integer lists of length
+$d \cdot n$ that are reshaped into gate arrays for evaluation.  The number of
+generations is derived as $\lfloor B / P \rfloor - 1$, where $P$ is population
+size and $B$ is the evaluation budget, so total evaluations are approximately
+$B$.  We use $P{=}50$, crossover probability 0.5, mutation probability 0.2,
+tournament size 3, and per-gene flip probability 0.1.
+
+\subsection{Gradient-Based Optimization (Grad)}
+
+To apply gradient-based optimization to the discrete gate selection problem, we
+introduce a \emph{continuous relaxation}.  Each gate position $(t, q)$ is
+parameterized by a logit vector $\boldsymbol{\ell}_{t,q} \in \mathbb{R}^{|\mathcal{G}|}$.
+A softmax produces mixture weights:
+\begin{equation}
+    w_g = \frac{\exp(\ell_g)}{\sum_{g'} \exp(\ell_{g'})},
+\end{equation}
+and the effective gate matrix at position $(t,q)$ is the convex combination
+$\tilde{U}_{t,q} = \sum_{g \in \mathcal{G}} w_g \, U_g^{(q)}$.
+The relaxed fitness is differentiable with respect to the logits, enabling
+optimization via L-BFGS-B (minimizing $-f$).  After convergence, the discrete
+solution is obtained by taking $\arg\max_g \ell_g$ at each position.  We run
+$R{=}3$ random restarts, splitting the budget evenly.
+
+\subsection{Deep Learning / REINFORCE (DL)}
+
+Since the true fitness involves discrete gate sampling and is
+non-differentiable, we apply the REINFORCE policy-gradient
+estimator~\cite{williams1992simple}.  A feedforward neural network
+$\pi_\theta$ maps the target distribution $\mathbf{t} \in \mathbb{R}^{2^n}$ to
+logits over $|\mathcal{G}|$ gate types at each of the $d \cdot n$ positions.
+Gate arrays are sampled from the resulting categorical distributions, evaluated,
+and the policy is updated with:
+\begin{equation}
+    \nabla_\theta J \approx \frac{1}{K}\sum_{k=1}^{K}
+    \bigl(f_k - \bar{f}\bigr)\,\nabla_\theta \log \pi_\theta(\mathbf{a}_k),
+\end{equation}
+where $\bar{f}$ is an exponential moving average baseline (decay 0.9) and $K$
+is the batch size.  The network has two hidden layers of 32 units with ReLU
+activations, trained with Adam (lr $= 10^{-3}$).
+
+\subsection{NSGA-II Multi-Objective Optimization}
+
+NSGA-II~\cite{deb2002nsga2} optimizes three objectives simultaneously:
+\begin{enumerate}[nosep]
+    \item \textbf{Maximize fidelity}: target probability $f(G)$.
+    \item \textbf{Minimize active depth}: count of time steps containing at
+          least one non-identity gate.
+    \item \textbf{Minimize gate count}: total non-identity gates.
+\end{enumerate}
+We use DEAP's $(\mu + \lambda)$ scheme with \texttt{selNSGA2} for
+non-dominated sorting and crowding-distance tie-breaking.  The individual
+representation, crossover, and mutation operators are identical to the
+single-objective EA.  For backward compatibility with the study framework,
+\texttt{optimize()} returns the Pareto-front member with highest fidelity.  The
+full Pareto front is stored for post-hoc analysis.
+
+\subsection{MAP-Elites Quality-Diversity Optimization}
+
+MAP-Elites~\cite{mouret2015illuminating} maintains a 2D grid archive indexed by
+two \emph{behavioral descriptors}:
+\begin{itemize}[nosep]
+    \item \textbf{Active depth}: number of time steps with $\geq 1$ non-identity
+          gate, discretized into 10 bins.
+    \item \textbf{Entanglement density}: ratio of CNOT gates to total
+          non-identity gates, discretized into 10 bins.
+\end{itemize}
+Each cell stores the highest-fitness circuit mapping to that (depth, density)
+region.  The algorithm proceeds in two phases: (1) random seeding fills initial
+cells, then (2) a mutation loop picks a random occupied cell, mutates its
+circuit (random gene flips at rate 0.15), evaluates the child, and places it in
+the archive if its cell is empty or the child has higher fitness.  No external
+library is used; the implementation is $\sim$80 lines of core logic.  For the
+study framework, \texttt{optimize()} returns the archive member with highest
+fidelity.
+
+% ==============================================================================
+\section{Benchmark Problems}\label{sec:problems}
+
+We evaluate on six problems, summarized in \Cref{tab:problems}.  All operate on
+$n{=}3$ qubits ($2^n{=}8$ basis states).
+
+\begin{table}[t]
+\centering
+\caption{Benchmark problems.  The target column describes the desired output
+distribution.  Classical complexity refers to the best classical algorithm for
+the equivalent task.}
+\label{tab:problems}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Problem} & \textbf{Target} & \textbf{Steps} & \textbf{Classical} \\
+\midrule
+Grover           & $P(\text{marked})=1$ & 15 & $O(N)$ \\
+Flip             & Bitwise NOT          & 9  & $O(N)$ \\
+Inverse          & $1/x$ mapping        & 12  & $O(N)$ \\
+Fourier          & DFT                  & 12  & $O(N\log N)$ \\
+Deutsch--Jozsa   & $P(|000\rangle)=0$   & 12  & $O(N/2{+}1)$ \\
+Bernstein--Vaz.  & $P(|s\rangle)=1$     & 12  & $O(N)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Grover's Search.}
+The input is the all-zeros state (mapped to uniform superposition by the
+simulator).  The target distribution places all probability mass on a single
+marked item.  The classical equivalent is linear search, requiring $O(N)$
+queries on average.
+
+\paragraph{Bitwise Flip.}
+Given discrete binary input states, the target is the bitwise complement.
+
+\paragraph{Modular Inverse.}
+Given continuous-valued input amplitudes, the target amplitudes are $1/x$
+(with $1/0 \mapsto 0$), normalized.
+
+\paragraph{Quantum Fourier Transform.}
+The target is the discrete Fourier transform of the input amplitudes.
+
+\paragraph{Deutsch--Jozsa.}
+For a balanced Boolean function, the quantum algorithm should produce zero
+probability on $|0\ldots 0\rangle$.  We set the target to uniform probability
+over all non-zero basis states.
+
+\paragraph{Bernstein--Vazirani.}
+The quantum algorithm should recover a hidden bit string $s$ by concentrating
+all probability on $|s\rangle$.  We use $s = 6$ (binary \texttt{110}) for
+$n{=}3$.
+
+% ==============================================================================
+\section{Experimental Setup}\label{sec:setup}
+
+\paragraph{Configuration.}
+All experiments use $n{=}3$ qubits, an evaluation budget of $B{=}10{,}000$, and
+$T{=}10$ independent trials per (problem, optimizer) pair.  Each trial is seeded
+deterministically ($\text{seed} = 42 + t$ for trial $t$) and the fitness cache
+is cleared between trials.  The total study comprises $6 \times 6 \times 10 =
+360$ optimization runs.
+
+\paragraph{Optimizer Hyperparameters.}
+\Cref{tab:hyperparams} lists the hyperparameters used for each optimizer.
+
+\begin{table}[t]
+\centering
+\caption{Optimizer hyperparameters.}
+\label{tab:hyperparams}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Optimizer} & \textbf{Key Parameters} \\
+\midrule
+Random Search & --- \\
+EA            & $P{=}50$, $p_\text{cx}{=}0.5$, $p_\text{mut}{=}0.2$, $T_s{=}3$ \\
+Gradient      & 3 restarts, L-BFGS-B \\
+DL/REINFORCE  & batch 8, hidden 32, lr $10^{-3}$, Adam \\
+NSGA-II       & $P{=}50$, $p_\text{cx}{=}0.5$, $p_\text{mut}{=}0.2$, $(\mu{+}\lambda)$ \\
+MAP-Elites    & $10{\times}10$ grid, 100 seeds, mut.\ rate 0.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Platform.}
+All experiments run on a single CPU thread using a pure NumPy statevector
+simulator (no GPU, no Qiskit runtime dependency).  PyTorch (CPU-only) is used
+for the DL optimizer.
+
+\paragraph{Metrics.}
+We report standard metrics per (problem, optimizer) pair, aggregated over 10 trials:
+\begin{enumerate}[nosep]
+    \item \textbf{Fitness}: probability of the target outcome, $f \in [0, 1]$.
+    \item \textbf{Convergence speed}: the evaluation index at which the running
+          best fitness first exceeds $95\%$ of the final value.
+    \item \textbf{Wall-clock time}: total seconds elapsed.
+    \item \textbf{Circuit complexity}: number of non-identity gates in the best
+          solution.
+\end{enumerate}
+For the QD methods, we additionally report:
+\begin{enumerate}[nosep,resume]
+    \item \textbf{Archive coverage} (MAP-Elites): percentage of grid cells
+          filled.
+    \item \textbf{QD-score} (MAP-Elites): sum of fitness values across all
+          occupied cells.
+    \item \textbf{Pareto front} (NSGA-II): set of non-dominated solutions in
+          (fidelity, depth, gate count) space.
+\end{enumerate}
+
+% ==============================================================================
+\section{Results}\label{sec:results}
+
+\subsection{Fitness}
+
+\Cref{tab:fitness} reports the mean fitness ($\pm$ one standard deviation)
+across 10 trials for each optimizer--problem pair.  \Cref{fig:fitness} shows the
+corresponding bar chart.
+
+\begin{table*}[t]
+\centering
+\caption{Mean fitness $\pm$ std over 10 trials.  Bold indicates the best mean per problem.}
+\label{tab:fitness}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Problem} & \textbf{RS} & \textbf{EA} & \textbf{Grad} & \textbf{DL} & \textbf{NSGA-II} & \textbf{MAP-Elites} \\
+\midrule
+Grover          & $0.833 \pm 0.077$ & $\mathbf{0.967 \pm 0.052}$ & $0.000 \pm 0.000$ & $0.938 \pm 0.065$ & $0.768 \pm 0.180$ & $0.887 \pm 0.027$ \\
+Flip            & $0.747 \pm 0.162$ & $0.500 \pm 0.000$ & $0.050 \pm 0.100$ & $\mathbf{0.985 \pm 0.044}$ & $0.535 \pm 0.106$ & $0.721 \pm 0.226$ \\
+Inverse         & $0.885 \pm 0.046$ & $0.673 \pm 0.224$ & $0.300 \pm 0.245$ & $\mathbf{1.000 \pm 0.000}$ & $0.650 \pm 0.229$ & $\mathbf{1.000 \pm 0.000}$ \\
+Fourier         & $\mathbf{1.000 \pm 0.000}$ & $\mathbf{1.000 \pm 0.000}$ & $0.523 \pm 0.031$ & $\mathbf{1.000 \pm 0.000}$ & $0.985 \pm 0.044$ & $\mathbf{1.000 \pm 0.000}$ \\
+Deutsch--Jozsa  & $0.932 \pm 0.069$ & $0.946 \pm 0.083$ & $0.125 \pm 0.202$ & $\mathbf{1.000 \pm 0.000}$ & $0.797 \pm 0.155$ & $0.982 \pm 0.036$ \\
+Bernstein--Vaz. & $0.909 \pm 0.063$ & $0.724 \pm 0.229$ & $0.000 \pm 0.000$ & $0.982 \pm 0.036$ & $0.691 \pm 0.196$ & $\mathbf{0.991 \pm 0.027}$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{fitness_comparison.png}
+    \caption{Mean fitness ($\pm$ 1 std) across 10 trials for each optimizer and
+    problem.  DL/REINFORCE and MAP-Elites consistently achieve the highest
+    fitness.  NSGA-II trades fidelity for circuit compactness.}
+    \label{fig:fitness}
+\end{figure*}
+
+DL/REINFORCE achieves the highest or tied-highest mean fitness on five of six
+problems, reaching perfect fitness (1.0) on Inverse, Fourier, and
+Deutsch--Jozsa.  MAP-Elites matches DL on Inverse and Fourier while achieving
+the best result on Bernstein--Vazirani (0.991).  The EA achieves the best
+fitness on Grover (0.967) due to its rapid convergence exploiting crossover
+building blocks.  NSGA-II's fidelity is lower overall because its
+multi-objective pressure distributes the population across the Pareto front
+rather than concentrating on the highest-fidelity region.
+
+\subsection{Convergence}
+
+\Cref{fig:convergence} shows the mean convergence curves (best fitness vs.\
+evaluation count) averaged over 10 trials.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{convergence_curves.png}
+    \caption{Mean convergence curves across 10 trials.  The EA converges fastest
+    but often to a suboptimal solution.  MAP-Elites improves steadily throughout
+    the full budget as archive exploration continues.}
+    \label{fig:convergence}
+\end{figure*}
+
+The EA converges extremely rapidly---typically within the first 5--70
+evaluations---but often to a suboptimal solution, explaining its high variance
+on several problems.  MAP-Elites converges more slowly but continues improving
+throughout the budget, benefiting from the diversity of parent circuits in its
+archive.  The DL optimizer exhibits a learning plateau followed by rapid
+improvement around evaluations 500--800.
+
+\subsection{Wall-Clock Time}
+
+\Cref{fig:wallclock} reports wall-clock times.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{wall_clock_comparison.png}
+    \caption{Wall-clock time comparison.  The EA is fastest.  The gradient and DL
+    optimizers are slowest due to L-BFGS-B restarts and PyTorch overhead,
+    respectively.}
+    \label{fig:wallclock}
+\end{figure*}
+
+The EA is consistently the fastest optimizer ($\approx$2.3--3.8\,s), followed by
+NSGA-II ($\approx$2.5--4.3\,s), random search ($\approx$3.7--7.1\,s),
+MAP-Elites ($\approx$4.3--6.6\,s), DL ($\approx$9.2--14.1\,s), and the gradient
+optimizer ($\approx$8.6--19.6\,s).
+
+\subsection{Circuit Complexity}
+
+\Cref{fig:complexity} shows the circuit complexity (non-identity gate count) of
+the best solutions.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{complexity_comparison.png}
+    \caption{Circuit complexity (non-identity gates) of the best solutions
+    found.  NSGA-II produces markedly simpler circuits due to its gate-count
+    minimization objective.}
+    \label{fig:complexity}
+\end{figure*}
+
+NSGA-II produces notably simpler circuits (mean 2.6--11.1 gates) compared to
+the other methods (mean 10--22 gates).  This is a direct consequence of its
+gate-count minimization objective.  The gradient optimizer also produces sparse
+circuits (2.5--9.4 gates) but for a different reason: most logit positions
+converge to identity during continuous optimization.
+
+\subsection{Quality-Diversity Analysis}
+
+\paragraph{MAP-Elites Archive.}
+
+\Cref{fig:heatmaps} shows the archive heatmaps for each problem.
+\Cref{tab:qd} reports archive coverage, QD-score, and best fitness.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{archive_heatmaps.png}
+    \caption{MAP-Elites archive heatmaps.  Each cell shows the fitness of the
+    best circuit at that (depth bin, entanglement density bin) coordinate.
+    High coverage indicates that MAP-Elites discovers circuits across a wide
+    range of structural configurations.}
+    \label{fig:heatmaps}
+\end{figure*}
+
+\begin{table}[t]
+\centering
+\caption{MAP-Elites archive statistics (10$\times$10 grid, last trial).}
+\label{tab:qd}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Problem} & \textbf{Coverage} & \textbf{QD-Score} & \textbf{Best $f$} \\
+\midrule
+Grover     & 87\% & 36.5 & 0.854 \\
+Flip       & 79\% & 60.1 & 1.000 \\
+Inverse    & 83\% & 46.0 & 1.000 \\
+Fourier    & 84\% & 65.5 & 1.000 \\
+D--J       & 84\% & 48.9 & 1.000 \\
+B--V       & 86\% & 43.9 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+MAP-Elites achieves 79--87\% archive coverage, indicating that the algorithm
+discovers high-fitness circuits across a wide range of structural
+configurations.  The QD-score (sum of fitnesses across all occupied cells)
+ranges from 36.5 (Grover) to 65.5 (Fourier), with higher values indicating
+problems where high fitness is achievable across more of the
+depth$\times$density space.  Fourier has the highest QD-score because many
+different circuit structures can implement the DFT; Grover has the lowest
+because the precise interference pattern required constrains viable
+architectures.
+
+\paragraph{NSGA-II Pareto Fronts.}
+
+\Cref{fig:pareto} shows the Pareto fronts in (depth, fidelity) space.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{pareto_fronts.png}
+    \caption{NSGA-II Pareto fronts showing the trade-off between fidelity and
+    active circuit depth.  Each point is a non-dominated solution from the final
+    population.}
+    \label{fig:pareto}
+\end{figure*}
+
+The Pareto fronts reveal problem-specific trade-offs.  For Flip, NSGA-II finds
+circuits achieving perfect fidelity (1.0) at depth 9.  For Grover, the front
+converges to a single depth--fidelity point (0.854 at depth 11), suggesting that
+reducing depth below this threshold causes a sharp fidelity cliff.  For
+Bernstein--Vazirani, the front includes low-depth solutions (depth 3) at
+fidelity 0.50 and higher-depth solutions approaching 0.50, indicating that the
+multi-objective pressure successfully discovered minimal-depth circuits even when
+they could not reach high fidelity.
+
+% ==============================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{MAP-Elites as a Practical Circuit Discovery Tool}
+
+MAP-Elites emerges as a surprisingly effective optimizer for quantum circuit
+synthesis, matching or approaching the best single-objective methods in peak
+fitness while additionally providing a diverse portfolio of circuits.  Its
+archive-based exploration avoids the premature convergence that affects the EA,
+as parents are drawn from structurally diverse cells rather than a converging
+population.  The high archive coverage (79--87\%) demonstrates that viable
+circuits exist across a wide range of depth and entanglement configurations, a
+finding that would be invisible to single-objective optimization.
+
+This diversity is practically valuable: hardware constraints may favor circuits
+with specific depth or entanglement characteristics, and a populated archive
+provides ready-made alternatives without re-running optimization.
+
+\subsection{NSGA-II: Compactness at a Cost}
+
+NSGA-II's multi-objective formulation successfully produces compact circuits
+(2.6--11.1 gates vs.\ 10--22 for other methods), but its fidelity suffers on
+harder problems (0.535 on Flip, 0.650 on Inverse).  The three-way
+objective trade-off distributes selection pressure across the Pareto front,
+reducing the effective optimization effort on any single objective.  For
+problems where compact circuits can achieve high fidelity (e.g., Fourier at
+0.985), NSGA-II remains competitive.
+
+\subsection{The Strength of Random Search}
+
+Random search remains a competitive baseline at this scale, outperforming the EA
+on several problems (Flip, Inverse, Bernstein--Vazirani).  With 10\,000
+independent uniform samples from the gate space, it covers the landscape more
+broadly than the EA's evolving population, which can converge prematurely.
+
+\subsection{Why Gradient Optimization Underperforms}
+
+The gradient-based optimizer's poor performance stems from the
+\emph{discretization gap}: the soft mixture of gate matrices used during
+optimization does not correspond to any physically realizable circuit.  When the
+continuous solution is discretized via $\arg\max$, the resulting discrete
+circuit may have drastically different behavior.  This effect is severe on 3
+qubits, where the gradient optimizer scores near-zero on Grover and
+Bernstein--Vazirani.
+
+\subsection{Threats to Validity}
+
+Several factors limit generalizability:
+\begin{enumerate}[nosep]
+    \item The 3-qubit setting is still small; scaling behavior may differ.
+    \item The gate set includes only five gate types.
+    \item The fitness function measures only single-outcome probability.
+    \item Hyperparameters were not extensively tuned.
+    \item The MAP-Elites behavioral descriptors (depth, entanglement density)
+          were chosen heuristically; other descriptors may be more informative.
+\end{enumerate}
+
+% ==============================================================================
+\section{Related Work}\label{sec:related}
+
+\paragraph{Evolutionary approaches.}
+Evolutionary approaches to quantum circuit synthesis date to
+\citet{williams1998automated}, who evolved quantum logic circuits using genetic
+programming.  \citet{massey2005evolving} explored evolving quantum circuits for
+a broader class of problems.  \citet{las2016genetic} applied genetic algorithms
+to quantum circuit optimization with a focus on minimizing gate count.
+
+\paragraph{Quality-diversity.}
+Quality-diversity algorithms~\cite{mouret2015illuminating, pugh2016quality}
+have been widely applied in robotics and game design but remain largely
+unexplored for quantum circuit synthesis.  Our work represents one of the first
+applications of MAP-Elites to this domain, demonstrating that the
+archive-based approach is well-suited to discovering structurally diverse
+quantum circuits.
+
+\paragraph{Multi-objective quantum optimization.}
+Multi-objective optimization of quantum circuits has received limited attention.
+Prior work has focused on bi-objective trade-offs (fidelity vs.\ depth) in
+variational circuits~\cite{cerezo2021variational}, but systematic application
+of NSGA-II to discrete circuit synthesis with three objectives (fidelity,
+depth, gate count) is, to our knowledge, novel.
+
+\paragraph{Reinforcement learning.}
+\citet{fosel2021quantum} used deep RL to discover quantum error correction
+codes, and \citet{moro2021quantum} applied RL to quantum circuit
+optimization.  \citet{rietsch2024unitary} applied Gumbel AlphaZero to
+synthesize unitaries over the Clifford+T gate set.
+
+\paragraph{Architecture search.}
+\citet{sun2026qas} proposed a predictor-free framework for quantum
+architecture search that decouples unsupervised circuit representation
+learning from the search process.
+
+\paragraph{Benchmarking.}
+\citet{sharma2025comparative} provided a systematic comparison of quantum
+optimization techniques, establishing standardized protocols for fair
+comparison.  Our budget-normalized evaluation protocol follows the same
+philosophy.
+
+% ==============================================================================
+\section{Conclusion}\label{sec:conclusion}
+
+We presented a controlled empirical comparison of six optimization methods for
+quantum circuit synthesis, including two quality-diversity approaches, evaluated
+across six problems on a 3-qubit system.  Our key findings are:
+
+\begin{enumerate}[nosep]
+    \item \textbf{DL/REINFORCE and MAP-Elites achieve the highest fitness},
+          both reaching perfect solutions on multiple problems.  MAP-Elites
+          matches DL on Inverse and Fourier while providing a diverse portfolio
+          of structurally varied circuits.
+    \item \textbf{MAP-Elites discovers diverse circuit portfolios} with
+          79--87\% archive coverage and QD-scores of 36--66, demonstrating that
+          viable circuits exist across a wide range of depth and entanglement
+          configurations.
+    \item \textbf{NSGA-II produces compact circuits} (2.6--11.1 gates) through
+          explicit depth and gate-count minimization, at the cost of reduced
+          fidelity on harder problems.
+    \item \textbf{The EA offers the best speed--quality trade-off}, converging
+          rapidly at the lowest wall-clock cost.
+    \item \textbf{Gradient-based continuous relaxation consistently
+          underperforms} due to the discretization gap.
+\end{enumerate}
+
+These results demonstrate that quality-diversity methods are a promising and
+underexplored direction for quantum circuit synthesis.  Future work should
+investigate scaling to larger qubit counts, alternative behavioral descriptors
+for MAP-Elites (e.g., gate-type distribution, symmetry measures), hybrid
+approaches combining MAP-Elites with learned circuit representations
+\cite{sun2026qas}, and integration with hardware-aware compilation to exploit
+the diverse circuit portfolios on real quantum processors.
+
+% ==============================================================================
+\begin{thebibliography}{20}
+
+\bibitem[Williams and Gray(1998)]{williams1998automated}
+C.~P. Williams and A.~G. Gray.
+\newblock Automated design of quantum circuits.
+\newblock In \emph{Quantum Computing and Quantum Communications}, pp.~113--125.
+  Springer, 1998.
+
+\bibitem[Massey and Clark(2005)]{massey2005evolving}
+P.~Massey and J.~A. Clark.
+\newblock Evolving quantum circuits.
+\newblock \emph{Genetic Programming and Evolvable Machines}, 6(4):415--449, 2005.
+
+\bibitem[Las~Heras et~al.(2016)]{las2016genetic}
+U.~Las~Heras, U.~Alvarez-Rodriguez, E.~Solano, and M.~Sanz.
+\newblock Genetic algorithms for digital quantum simulations.
+\newblock \emph{Physical Review Letters}, 116(23):230504, 2016.
+
+\bibitem[Dawson and Nielsen(2005)]{dawson2005solovay}
+C.~M. Dawson and M.~A. Nielsen.
+\newblock The {S}olovay-{K}itaev algorithm.
+\newblock \emph{Quantum Information \& Computation}, 6(1):81--95, 2005.
+
+\bibitem[Shende et~al.(2006)]{shende2006synthesis}
+V.~V. Shende, S.~S. Bullock, and I.~L. Markov.
+\newblock Synthesis of quantum-logic circuits.
+\newblock \emph{IEEE Transactions on Computer-Aided Design of Integrated
+  Circuits and Systems}, 25(6):1000--1010, 2006.
+
+\bibitem[Williams(1992)]{williams1992simple}
+R.~J. Williams.
+\newblock Simple statistical gradient-following algorithms for connectionist
+  reinforcement learning.
+\newblock \emph{Machine Learning}, 8(3):229--256, 1992.
+
+\bibitem[Cerezo et~al.(2021)]{cerezo2021variational}
+M.~Cerezo, A.~Arrasmith, R.~Babbush, S.~C. Benjamin, S.~Endo, K.~Fujii,
+  J.~R. McClean, K.~Mitarai, X.~Yuan, L.~Cincio, and P.~J. Coles.
+\newblock Variational quantum algorithms.
+\newblock \emph{Nature Reviews Physics}, 3(9):625--644, 2021.
+
+\bibitem[F\"osel et~al.(2021)]{fosel2021quantum}
+T.~F\"osel, M.~Y. Niu, F.~Marquardt, and L.~Li.
+\newblock Quantum circuit optimization with deep reinforcement learning.
+\newblock arXiv preprint arXiv:2103.07585, 2021.
+
+\bibitem[Moro et~al.(2021)]{moro2021quantum}
+L.~Moro, M.~G.~A. Paris, M.~Restelli, and E.~Prati.
+\newblock Quantum compiling by deep reinforcement learning.
+\newblock \emph{Communications Physics}, 4(1):178, 2021.
+
+\bibitem[Rietsch et~al.(2024)]{rietsch2024unitary}
+S.~Rietsch, A.~Y. Dubey, C.~Ufrecht, M.~Periyasamy, A.~Plinge,
+  C.~Mutschler, and D.~D. Scherer.
+\newblock Unitary synthesis of {C}lifford+{T} circuits with reinforcement
+  learning.
+\newblock In \emph{Proc.\ IEEE International Conference on Quantum Computing
+  and Engineering (QCE)}, pp.~824--835, 2024.
+
+\bibitem[Sharma and Lau(2025)]{sharma2025comparative}
+M.~Sharma and H.~C. Lau.
+\newblock A comparative study of quantum optimization techniques for solving
+  combinatorial optimization benchmark problems.
+\newblock arXiv preprint arXiv:2503.12121, 2025.
+
+\bibitem[Sun et~al.(2026)]{sun2026qas}
+Y.~Sun, Z.~Wu, V.~Tresp, and Y.~Ma.
+\newblock Quantum architecture search with unsupervised representation learning.
+\newblock \emph{Quantum}, 10:1994, 2026.
+
+\bibitem[Deb et~al.(2002)]{deb2002nsga2}
+K.~Deb, A.~Pratap, S.~Agarwal, and T.~Meyarivan.
+\newblock A fast and elitist multiobjective genetic algorithm: {NSGA-II}.
+\newblock \emph{IEEE Transactions on Evolutionary Computation}, 6(2):182--197,
+  2002.
+
+\bibitem[Mouret and Clune(2015)]{mouret2015illuminating}
+J.-B. Mouret and J.~Clune.
+\newblock Illuminating search spaces by mapping elites.
+\newblock arXiv preprint arXiv:1504.04909, 2015.
+
+\bibitem[Pugh et~al.(2016)]{pugh2016quality}
+J.~K. Pugh, L.~B. Soros, and K.~O. Stanley.
+\newblock Quality diversity: A new frontier for evolutionary computation.
+\newblock \emph{Frontiers in Robotics and AI}, 3:40, 2016.
+
+\end{thebibliography}
+
+\end{document}

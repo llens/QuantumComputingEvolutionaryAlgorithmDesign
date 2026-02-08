@@ -1,0 +1,656 @@
+\documentclass[11pt]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=green!50!black,
+    urlcolor=blue!70!black,
+}
+
+% Compact lists
+\setlist{nosep,leftmargin=1.5em}
+
+% --- Title ---
+\title{Literature Review:\\Evolutionary Algorithms for Quantum Circuit Design}
+\author{Thomas Snell}
+\date{February 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This literature review surveys the intersection of evolutionary algorithms and quantum circuit design as of early 2026.
+We identify key trends, benchmark problems, active research groups, and open problems across eight sub-fields: EA-based circuit synthesis, quantum architecture search, QAOA parameter optimization, VQE ansatz design, multi-objective quantum optimization, quantum error correction, ML-based circuit design, and quality-diversity methods.
+A gap analysis positions our project---a fast numpy-based comparative study of six optimization methods across six quantum problems---within the broader landscape, and identifies under-explored research directions including quality-diversity optimization, transfer learning, and co-evolutionary approaches.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ==============================================================================
+\section{Field Overview}
+\label{sec:overview}
+
+The intersection of evolutionary algorithms (EAs) and quantum circuit design is experiencing a renaissance driven by the NISQ era's need for automated, hardware-aware circuit optimization. Three major trends dominate:
+
+\begin{enumerate}
+    \item \textbf{EAs remain competitive} with reinforcement learning and generative models for small-scale circuit synthesis, with advantages in interpretability and ease of implementation.
+    \item \textbf{Multi-objective and noise-aware optimization} are becoming standard requirements.
+    \item \textbf{Hybrid approaches dominate}: pure EA or pure RL approaches are being replaced by hybrids (EA + parameter optimization, EA + noise models, GA + QAOA).
+\end{enumerate}
+
+% ==============================================================================
+\section{Key Recent Papers by Topic}
+\label{sec:papers}
+
+% --- 2.1 ---
+\subsection{EA-Based Quantum Circuit Synthesis}
+
+\begin{longtable}{p{5.5cm} p{2.5cm} p{1cm} p{5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+Kolle et al., ``Evaluating Mutation Techniques in GA-Based QCS'' \cite{kolle2025mutation} & GECCO & 2025 & Delete+swap mutations outperform others for 4--6 qubit circuits \\
+\addlinespace
+Sunkel, Altmann, Kolle et al., ``Hybrid EA Circuit Construction \& Optimization'' \cite{sunkel2025hybrid} & GECCO & 2025 & Hybrid EA+COBYLA achieves 80\% depth reduction at 0.98 fidelity \\
+\addlinespace
+``GA4QCO: GA for Quantum Circuit Optimization'' \cite{ga4qco2023} & arXiv & 2023 & GA framework for circuit optimization with Qiskit \\
+\addlinespace
+``GASP: GA for State Preparation'' \cite{gasp2023} & Nat.\ Sci.\ Rep. & 2023 & GA for quantum state preparation circuits \\
+\addlinespace
+Tandeitnik \& Guerreiro, ``Evolving Quantum Circuits'' \cite{tandeitnik2022} & arXiv & 2022 & Island-model GA for circuit decomposition \\
+\addlinespace
+Bhandari et al., ``EA for Boolean Gates, CA, Entanglement'' \cite{bhandari2024} & arXiv & 2024 & Mutation rate balancing for 5-qubit entangling circuits \\
+\bottomrule
+\end{longtable}
+
+% --- 2.2 ---
+\subsection{Quantum Architecture Search (QAS)}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``AQEA-QAS'' \cite{aqea2025} & MDPI Entropy & 2025 & Adaptive quantum evolutionary algorithm for QNN design \\
+\addlinespace
+``Noise-Aware QAS Based on NSGA-II'' \cite{noiseaware2026} & arXiv & 2026 & Multi-objective noise-aware architecture search \\
+\addlinespace
+``Hierarchical QAS'' \cite{hierarchical2023} & npj Quantum Inf. & 2023 & Hierarchical representations for modular search \\
+\addlinespace
+``Balanced QNAS'' \cite{bqnas2024} & Neurocomputing & 2024 & One-shot NAS with quantum parallelism \\
+\bottomrule
+\end{longtable}
+
+% --- 2.3 ---
+\subsection{QAOA + Evolutionary Methods}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``GA as Classical Optimizer for QAOA'' \cite{gaqaoa2023} & Appl.\ Soft Comput. & 2023 & GA outperforms gradient-free optimizers for QAOA parameters \\
+\addlinespace
+``QAOA Exponential Time for Linear Functions'' \cite{qaoaexp2025} & GECCO & 2025 & Fundamental complexity limitations of QAOA \\
+\addlinespace
+``GA-Based QAOA for Power Networks'' \cite{gaqaoapower2024} & Springer & 2024 & Domain-specific QAOA+GA evaluation \\
+\bottomrule
+\end{longtable}
+
+% --- 2.4 ---
+\subsection{VQE + Evolutionary Optimization}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``PSO for VQE (GAQPSO)'' \cite{gaqpso2024} & Phys.\ Chem.\ Chem.\ Phys. & 2024 & Gradient-free PSO with noise resilience for VQE \\
+\addlinespace
+Gustafson et al., ``Surrogate Optimization of VQC'' \cite{gustafson2025} & PNAS & 2025 & Classical surrogates to accelerate VQE convergence \\
+\bottomrule
+\end{longtable}
+
+% --- 2.5 ---
+\subsection{Multi-Objective Quantum Optimization}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``Quantum Approximate Multi-Objective Optimization'' \cite{qamoo2025} & Nat.\ Comp.\ Sci. & 2025 & QAOA for Pareto-optimal multi-objective solutions \\
+\addlinespace
+``MEAS-PQC'' \cite{measpqc2023} & MDPI Entropy & 2023 & Multi-objective EA for parameterized circuit architecture \\
+\addlinespace
+Zorn et al., ``Quality Diversity for VQC Optimization'' \cite{zorn2025} & Various & 2025 & CMA-MAE for quality-diversity in circuit design \\
+\bottomrule
+\end{longtable}
+
+% --- 2.6 ---
+\subsection{Quantum Error Correction + EA}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``Engineering QEC Codes with EA'' \cite{qecea2025} & IEEE TQE & 2025 & EA search for optimal stabilizer codes ($n \le 20$ qubits) \\
+\addlinespace
+``T-Count Optimizing GA'' \cite{tcount2024} & arXiv & 2024 & Up to 79\% T-depth reduction via GA \\
+\bottomrule
+\end{longtable}
+
+% --- 2.7 ---
+\subsection{ML-Based Circuit Design (Non-EA)}
+
+\begin{longtable}{p{5.5cm} p{3cm} p{1cm} p{4.5cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} & \textbf{Key Contribution} \\
+\midrule
+\endhead
+``FlowQ-Net'' (GFlowNets) \cite{flowqnet2025} & arXiv & 2025 & 10--30$\times$ more compact circuits vs baselines \\
+\addlinespace
+``AlphaTensor-Quantum'' (DeepMind) \cite{alphatensor2025} & Nat.\ Mach.\ Intell. & 2025 & RL for efficient non-Clifford gate decomposition \\
+\addlinespace
+``Q-Fusion'' (Diffusion Model) \cite{qfusion2025} & Penn State & 2025 & Graph-based diffusion for circuit generation \\
+\addlinespace
+Rouillard et al., ``Automated QA Design with DSL'' \cite{rouillard2025} & arXiv & 2025 & DSL + evolutionary search rediscovers QFT, D-J, Grover \\
+\bottomrule
+\end{longtable}
+
+% --- 2.8 ---
+\subsection{Surveys}
+
+\begin{longtable}{p{7cm} p{4.5cm} p{1cm}}
+\toprule
+\textbf{Paper} & \textbf{Venue} & \textbf{Year} \\
+\midrule
+\endhead
+``Comprehensive Review of QCO'' \cite{qcoreview2024} & MDPI Quantum Reports / arXiv & 2024 \\
+\addlinespace
+``QC Synthesis \& Compilation Overview'' \cite{qcsynthesis2024} & arXiv & 2024 \\
+\addlinespace
+``AI for Quantum Computing'' \cite{aiqc2025} & Nature Communications & 2025 \\
+\addlinespace
+``Review of Procedures to Evolve Quantum Algorithms'' \cite{evolveqa2009} & GP \& Evolvable Machines & 2009 \\
+\bottomrule
+\end{longtable}
+
+% ==============================================================================
+\section{Standard Benchmarks in the Field}
+\label{sec:benchmarks}
+
+\begin{longtable}{p{4cm} p{5cm} p{5cm}}
+\toprule
+\textbf{Benchmark} & \textbf{Description} & \textbf{Typical Use} \\
+\midrule
+\endhead
+QFT & Quantum Fourier Transform & Circuit synthesis/compilation \\
+Grover's Search & Unstructured database search & EA-based circuit discovery \\
+MaxCut (via QAOA) & Combinatorial optimization on graphs & QAOA parameter optimization \\
+State Preparation & Prepare specific target states & GA fitness via fidelity \\
+Toffoli/Fredkin Gates & Multi-qubit gate decomposition & Gate-level optimization \\
+QASMBench & Suite of 1066 test circuits & Cross-framework benchmarking \\
+Molecular Ground State & H$_2$, LiH, BeH$_2$ molecules & VQE ansatz optimization \\
+Random Unitary Compilation & Arbitrary unitary matrices & Compiler optimization \\
+Stabilizer Codes & 5-qubit, Steane, Shor codes & QEC code discovery \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Key metrics.} State fidelity, circuit depth, gate count (total and T-count), approximation ratio, quantum volume, Hellinger fidelity, process fidelity, and hypervolume indicator (multi-objective).
+
+% ==============================================================================
+\section{Open Problems}
+\label{sec:open}
+
+The following open problems were identified across the surveyed literature:
+
+\begin{enumerate}
+    \item \textbf{Scalability.} Most EA approaches are tested on 4--8 qubits. Classical statevector simulation becomes infeasible beyond ${\sim}30$ qubits.
+    \item \textbf{Continuous parameters.} Handling rotation gate parameters ($R_x$, $R_y$, $R_z$) within discrete evolutionary search remains an open challenge.
+    \item \textbf{Noise-aware optimization.} Most EAs assume ideal execution; NISQ relevance requires noise models.
+    \item \textbf{Standardized benchmarks.} No universally accepted benchmark suite exists for EA-based quantum circuit synthesis.
+    \item \textbf{Search space representation.} The optimal circuit encoding for evolutionary operators is still debated.
+    \item \textbf{Hardware--software co-design.} Joint optimization with hardware topology constraints is underexplored.
+    \item \textbf{Multi-objective trade-offs.} Richer objective spaces beyond fidelity and depth are largely unexplored.
+    \item \textbf{Transfer and generalization.} Evolved circuits rarely generalize across problem instances or hardware.
+    \item \textbf{Verification at scale.} Verifying evolved circuits becomes intractable for large qubit counts.
+    \item \textbf{Adaptive operators.} Self-adaptive mutation and crossover rates specifically for quantum circuit EAs are understudied.
+\end{enumerate}
+
+% ==============================================================================
+\section{Gap Analysis: This Project vs.\ the Literature}
+\label{sec:gap}
+
+\subsection{Project Summary}
+
+This project implements a comparative study of six optimization methods (EA, Random Search, Gradient-Based, REINFORCE, NSGA-II, MAP-Elites) for evolving quantum circuits across six benchmark problems (Grover, Flip, Inverse, Fourier, Deutsch--Jozsa, Bernstein--Vazirani) using:
+\begin{itemize}
+    \item Pure numpy statevector simulation (${\sim}\mu$s per evaluation),
+    \item DEAP evolutionary algorithm framework,
+    \item 3-qubit circuits with 5 discrete gate types (I, T, H, CNOT$_\downarrow$, CNOT$_\uparrow$),
+    \item Single-objective and multi-objective fitness (fidelity, depth, gate count),
+    \item Quality-diversity optimization via MAP-Elites,
+    \item Fitness caching keyed by circuit bytes.
+\end{itemize}
+
+\subsection{Strengths vs.\ Literature}
+
+\begin{longtable}{p{4.5cm} p{9.5cm}}
+\toprule
+\textbf{Strength} & \textbf{How It Compares} \\
+\midrule
+\endhead
+Simulation speed (${\sim}\mu$s/eval) & 100--1000$\times$ faster than Qiskit Aer used in GA4QCO, GASP, etc. \\
+\addlinespace
+Fitness caching & Rarely seen in published frameworks \\
+\addlinespace
+DEAP integration & Mature, well-tested; most papers use custom implementations \\
+\addlinespace
+Six-method comparison & EA, Random, Gradient, DL, NSGA-II, MAP-Elites compared head-to-head \\
+\addlinespace
+Quality-diversity & MAP-Elites for algorithmic quantum circuits is nearly unexplored \\
+\addlinespace
+Reproducibility & Deterministic seeds, 10 trials per condition, 360 total runs \\
+\addlinespace
+No runtime Qiskit dependency & Eliminates version churn, import overhead \\
+\bottomrule
+\end{longtable}
+
+\subsection{Gaps vs.\ Literature}
+
+\begin{longtable}{p{4cm} p{1.5cm} p{8.5cm}}
+\toprule
+\textbf{Gap} & \textbf{Severity} & \textbf{What the Literature Does} \\
+\midrule
+\endhead
+Fixed discrete gate set only & HIGH & GA4QCO, GASP, GECCO~2025 all support parameterized rotation gates ($R_x$, $R_y$, $R_z$) \\
+\addlinespace
+No noise model & HIGH & Noise-Aware QAS (2026), GA-QAOA on real hardware show noise-aware fitness is critical for NISQ \\
+\addlinespace
+Only 3-qubit experiments & MEDIUM & Most papers test on 4--6+ qubits \\
+\addlinespace
+Limited gate set & MEDIUM & No $R_x$, $R_y$, $R_z$, CZ, Toffoli gates; limits circuit expressiveness \\
+\addlinespace
+No adaptive operators & MEDIUM & GECCO~2025 shows benefits of adaptive mutation rates \\
+\addlinespace
+No hardware topology constraints & LOW & Compilation-aware synthesis is an emerging direction \\
+\addlinespace
+No transfer/generalization study & LOW & DSL paper \cite{rouillard2025} shows generalizable algorithm learning \\
+\bottomrule
+\end{longtable}
+
+\subsection{Key Positioning}
+
+The project occupies a practical niche: \textbf{a lightweight, fast, dependency-minimal framework for evolving small quantum circuits with multi-objective and quality-diversity optimization}. Most comparable to GA4QCO and GASP, but differentiated by simulation speed, DEAP integration, and the inclusion of NSGA-II and MAP-Elites. The main remaining gaps are the lack of continuous parameters, noise modelling, and larger qubit counts.
+
+% ==============================================================================
+\section{Emerging Topics and Niche Opportunities}
+\label{sec:emerging}
+
+\subsection{Quality-Diversity for Quantum Circuits}
+\textbf{Status: Very under-explored.}
+Only one paper (Zorn et al.\ \cite{zorn2025}, CMA-MAE for VQC optimization on MaxCut/MVC/MIS/MaxClique) applies quality-diversity to quantum circuits. No work applies MAP-Elites to algorithmic quantum circuit discovery (QFT, Grover, etc.).
+Our project addresses this gap directly, using MAP-Elites with (depth, entanglement density) as behavioural descriptors to reveal fundamentally different circuit families for the same problem.
+
+\subsection{Noise-Aware Evolutionary Circuit Synthesis}
+\textbf{Status: Nascent.}
+Only one direct paper \cite{noiseaware2026} applies NSGA-II with noise models, using Qiskit's noisy simulation (slow). No fast numpy-based noisy simulation for EA fitness evaluation exists. Opportunity: implement depolarizing/amplitude damping noise in numpy and show that noise-aware evolution produces more hardware-robust circuits.
+
+\subsection{Surrogate-Assisted Evolutionary Quantum Circuit Optimization}
+\textbf{Status: Very new.}
+Gustafson et al.\ \cite{gustafson2025} pioneered surrogate optimization for VQC but used gradient-based methods, not EA. No surrogate-assisted EA specifically for quantum circuit structure optimization exists.
+
+\subsection{Transfer Learning for Evolved Quantum Circuits}
+\textbf{Status: Nearly empty.}
+Rouillard et al.\ \cite{rouillard2025} showed DSL-based circuits learned on 5 qubits generalize to larger instances, but no EA-based transfer learning work exists. Open questions: can circuits evolved for 3-qubit problems seed evolution for 4--5 qubit problems? Can circuits evolved for Grover transfer to Bernstein--Vazirani?
+
+\subsection{Grammatical Evolution for Quantum Circuits}
+\textbf{Status: Sparse but promising.}
+A 2025 paper on grammatical evolution for Grover achieved 97.9\% fidelity on IBM hardware vs 44.2\% for standard Grover, with up to 93.3\% depth reduction. Formalizing gate constraints as a BNF grammar could eliminate wasted evaluations on invalid circuits.
+
+\subsection{Co-Evolution for Quantum Circuits}
+\textbf{Status: Empty.}
+No true co-evolutionary approach to quantum circuit design exists. Co-evolving circuit structure and test cases, or co-evolving complementary circuit sub-modules, is completely unexplored.
+
+\subsection{Evolutionary Quantum Error Mitigation}
+\textbf{Status: Nascent.}
+One paper (IEEE 2021) uses GA for measurement error mitigation. No EA-based search for optimal error mitigation protocols (zero-noise extrapolation parameters, probabilistic error cancellation strategies) exists.
+
+\subsection{Summary of Research Whitespace}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Topic} & \textbf{Papers Found} & \textbf{Opportunity Level} \\
+\midrule
+Quality-Diversity / MAP-Elites for QCS & 1 & Very High \\
+Transfer Learning for Evolved Circuits & 0 & High \\
+Co-Evolution for Quantum Circuits & 0 & High \\
+Surrogate-Assisted EA for QCS & 0 (direct) & High \\
+Noise-Aware EA for QCS & 1 & High \\
+Grammatical Evolution for QCS & 1 (tangential) & Medium--High \\
+Adaptive Mutation for QCS & 1 & Medium--High \\
+Evolutionary Quantum Error Mitigation & 1 (tangential) & Medium \\
+\bottomrule
+\end{tabular}
+\caption{Research whitespace assessment as of February 2026.}
+\label{tab:whitespace}
+\end{table}
+
+% ==============================================================================
+\section{Publishable Contributions}
+\label{sec:contributions}
+
+Based on the literature review and gap analysis, five concrete publication-ready research directions are identified, ranked by feasibility and novelty.
+
+\subsection{Rec.\ 1: Multi-Objective NSGA-II for Quantum Circuit Synthesis}
+
+\textbf{Novelty: High. Status: Implemented.}
+No published work combines DEAP's built-in NSGA-II with fast numpy statevector simulation for multi-objective quantum circuit optimization. The closest work (MEAS-PQC \cite{measpqc2023}; Noise-Aware QAS \cite{noiseaware2026}) uses custom implementations or Qiskit.
+Our project implements this with three objectives (maximize fidelity, minimize active depth, minimize gate count) using \texttt{selNSGA2} and \texttt{eaMuPlusLambda}.
+
+Target venues: GECCO~2026, CEC~2026, Quantum Science and Technology.
+
+\subsection{Rec.\ 2: Adaptive Mutation Strategies for Quantum Circuit Evolution}
+
+\textbf{Novelty: Medium--High.}
+Kolle et al.\ \cite{kolle2025mutation} evaluated fixed mutation strategies but did not study self-adaptive mutation rates or quantum-aware mutation operators.
+Possible extensions: gate substitution preserving unitarity, subcircuit inversion, controlled-gate promotion, 1/5 success rule adaptation, multi-armed bandit operator selection.
+
+Target venues: GECCO~2026, IEEE Transactions on Evolutionary Computation.
+
+\subsection{Rec.\ 3: MAP-Elites Quality-Diversity for Circuit Repertoires}
+
+\textbf{Novelty: Very High. Status: Implemented.}
+Nobody has applied MAP-Elites to discover diverse repertoires of quantum circuits for algorithmic problems (Grover, QFT, etc.). Instead of finding one best circuit, MAP-Elites finds a map of diverse high-quality circuits indexed by structural features.
+Our project implements this with a 2D archive indexed by (active depth, entanglement density), achieving 79--87\% coverage across problems.
+
+Target venues: GECCO~2026, Artificial Life, Evolutionary Computation.
+
+\subsection{Rec.\ 4: Noise-Aware Evolutionary Synthesis with Surrogates}
+
+\textbf{Novelty: Medium. Practical impact: High.}
+Combine fast numpy noise models (depolarizing channel via Kraus operators or density matrix simulation) with surrogate-assisted evaluation (random forest or GP regression on circuit features $\to$ noisy fitness).
+
+Target venues: Quantum Science and Technology, Physical Review A, IEEE TQE.
+
+\subsection{Rec.\ 5: Parameterized Gate Evolution with Hybrid EA+Local Search}
+
+\textbf{Novelty: Medium.}
+Extend the gate set with $R_x(\theta)$, $R_y(\theta)$, $R_z(\theta)$ and continuous angle parameters. EA evolves gate topology; local optimizer (L-BFGS-B or COBYLA) tunes parameters.
+
+Target venues: GECCO~2026, J.~Chemical Theory and Computation.
+
+\subsection{Rec.\ 6: Grammatical Evolution with Hardware Constraints}
+
+\textbf{Novelty: Medium--High.}
+Formalize existing gate preprocessing rules (CNOT adjacency, H/T cancellation) as a BNF grammar. Use grammatical evolution instead of flat integer encoding. A 2025 GE paper achieved 97.9\% fidelity on real IBM hardware for 3-qubit Grover; expanding to our 6-problem benchmark suite would be a clear extension.
+
+Target venues: GECCO~2026, Evolutionary Computation.
+
+\subsection{Summary}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{clcccc}
+\toprule
+\textbf{\#} & \textbf{Direction} & \textbf{Novelty} & \textbf{Feasibility} & \textbf{Effort} & \textbf{Status} \\
+\midrule
+1 & Multi-Objective NSGA-II & High & High & 2--4 wk & Done \\
+2 & Adaptive Mutation & Med--High & High & 3--4 wk & Future \\
+3 & MAP-Elites QD & Very High & Medium & 3--5 wk & Done \\
+4 & Noise-Aware + Surrogate & Medium & Medium & 4--6 wk & Future \\
+5 & Parameterized Gates Hybrid & Medium & Medium & 4--6 wk & Future \\
+6 & Grammatical Evolution & Med--High & Medium & 3--4 wk & Future \\
+\bottomrule
+\end{tabular}
+\caption{Summary of publication-ready research directions.}
+\label{tab:recommendations}
+\end{table}
+
+The recommended combined paper---\emph{``Multi-Objective and Quality-Diversity Optimization of Quantum Circuits via Statevector Simulation''}---combining Recommendations~1 and~3, has been implemented and is presented in the accompanying research paper.
+
+% ==============================================================================
+\section{Standout Recent Results}
+\label{sec:standout}
+
+Several additional results merit attention:
+
+\paragraph{Grammatical Evolution for Grover (2025).}
+Evolved Grover circuits for all 8 basis states of a 3-qubit system on IBM \texttt{ibm\_brisbane} achieved 97.9\% fidelity vs 44.2--47.6\% for standard Grover, with up to 93.3\% depth reduction and 92.7\% gate count reduction.
+
+\paragraph{EXAQC (RIT).}
+Neuroevolution-style search that simultaneously optimizes gate types, qubit connectivity, parameterization, and circuit depth. Achieves $>$90\% accuracy on Iris, Wine, Seeds, and Breast Cancer benchmarks. Supports both Qiskit and PennyLane.
+
+\paragraph{QuantumNAS (Wang et al., HPCA 2022).}
+SuperCircuit approach that decouples training from search. Noise-adaptive evolutionary co-search for (circuit, qubit mapping) pairs, tested on 14 quantum computers across 12 benchmarks.
+
+\paragraph{Evolutionary BP+OSD Decoding for QEC (Dec 2025).}
+Differential evolution optimizes belief propagation weights, achieving comparable performance with 5 BP iterations vs 32 (standard) or 150 (BP with memory).
+
+\paragraph{RBF Surrogate for 127-Qubit QAOA (2025).}
+Radial basis function interpolation as an adaptive, hyperparameter-free surrogate successfully optimized 127-qubit QAOA circuits on IBM hardware.
+
+% ==============================================================================
+\section{Key Active Research Groups}
+\label{sec:groups}
+
+\paragraph{LMU Munich (Linnhoff-Popien group).}
+The most prolific group in the field: Kolle (mutation strategies, GECCO~2025), Altmann (hybrid EA, GECCO~2025), Zorn \& Stein (quality-diversity, ICAPS~2025), Sunkel (circuit construction, GECCO~2025), Gabor (QNEAT, GECCO~2023).
+
+\paragraph{MIT HAN Lab (Wang).} QuantumNAS---noise-adaptive co-search.
+
+\paragraph{University of KwaZulu-Natal (Rouillard, Petruccione).} DSL-based algorithm design.
+
+\paragraph{RIT (Kar, Krutz, Desell).} EXAQC neuroevolution.
+
+\paragraph{OsloMet (Bhandari, Nichele, Lind).} EA for entanglement.
+
+\paragraph{University of Melbourne (Creevey, Hill, Hollenberg).} GASP.
+
+% ==============================================================================
+\section{Software Toolkits}
+\label{sec:tools}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3.5cm} p{7cm} p{3.5cm}}
+\toprule
+\textbf{Tool} & \textbf{Description} & \textbf{Reference} \\
+\midrule
+EVOVAQ & Python toolbox for evolutionary VQC training (Qiskit) & GitHub \\
+EXAQC & Neuroevolution for quantum circuits (Qiskit + PennyLane) & RIT \\
+AlphaTensor-Quantum & DeepMind RL for T-count optimization & \cite{alphatensor2025} \\
+MQT Bench & ${\sim}$70,000 benchmark circuits, 2--130 qubits & GitHub \\
+Benchpress & 1000+ tests for circuit compilation (up to 930 qubits) & Nat.\ Comp.\ Sci.\ 2025 \\
+RevLib & Reversible function/circuit benchmarks & revlib.org \\
+\bottomrule
+\end{tabular}
+\caption{Key software toolkits for quantum circuit optimization.}
+\label{tab:tools}
+\end{table}
+
+% ==============================================================================
+\section{Target Venues}
+\label{sec:venues}
+
+\begin{itemize}
+    \item \textbf{GECCO 2026} (ACM Genetic and Evolutionary Computation Conference)---the premier venue; GECCO~2025 had multiple quantum circuit EA papers and dedicated quantum optimization workshops.
+    \item \textbf{CEC 2026} (IEEE Congress on Evolutionary Computation).
+    \item \textbf{IEEE QCE 2026} (IEEE International Conference on Quantum Computing and Engineering).
+    \item \textbf{QIP 2026} (Quantum Information Processing).
+    \item \textbf{Quantum Science and Technology} (IOP journal).
+    \item \textbf{Evolutionary Computation} (MIT Press journal).
+    \item \textbf{IEEE Transactions on Quantum Engineering}.
+\end{itemize}
+
+% ==============================================================================
+\section*{Acknowledgements}
+
+Literature search and synthesis conducted in February 2026.
+
+% ==============================================================================
+\begin{thebibliography}{35}
+
+\bibitem{kolle2025mutation}
+M.~Kolle et al.,
+``Evaluating mutation techniques in genetic algorithm-based quantum circuit synthesis,''
+in \emph{Proc.\ GECCO}, 2025.
+\newblock \href{https://arxiv.org/abs/2504.06413}{arXiv:2504.06413}.
+
+\bibitem{sunkel2025hybrid}
+L.~Sunkel, P.~Altmann, M.~Kolle et al.,
+``Quantum circuit construction and optimization through hybrid evolutionary algorithms,''
+in \emph{Proc.\ GECCO}, 2025.
+\newblock \href{https://arxiv.org/abs/2504.17561}{arXiv:2504.17561}.
+
+\bibitem{ga4qco2023}
+``GA4QCO: Genetic algorithm for quantum circuit optimization,''
+2023.
+\newblock \href{https://arxiv.org/abs/2302.01303}{arXiv:2302.01303}.
+
+\bibitem{gasp2023}
+``GASP: Genetic algorithms for state preparation on quantum computers,''
+\emph{Nature Scientific Reports}, 2023.
+\newblock \href{https://www.nature.com/articles/s41598-023-37767-w}{doi:10.1038/s41598-023-37767-w}.
+
+\bibitem{tandeitnik2022}
+D.~Tandeitnik and T.~Guerreiro,
+``Evolving quantum circuits,''
+2022.
+\newblock \href{https://arxiv.org/abs/2210.05058}{arXiv:2210.05058}.
+
+\bibitem{bhandari2024}
+A.~Bhandari, S.~Nichele, A.~Denysov, and P.~Lind,
+``Evolutionary algorithm for quantum circuits: Boolean gates, cellular automata, and entanglement,''
+2024.
+\newblock \href{https://arxiv.org/abs/2408.00448}{arXiv:2408.00448}.
+
+\bibitem{aqea2025}
+``AQEA-QAS: Adaptive quantum evolutionary algorithm for quantum architecture search,''
+\emph{MDPI Entropy}, vol.~27, no.~7, 2025.
+
+\bibitem{noiseaware2026}
+``Noise-aware quantum architecture search based on NSGA-II algorithm,''
+2026.
+\newblock \href{https://arxiv.org/abs/2601.10965}{arXiv:2601.10965}.
+
+\bibitem{hierarchical2023}
+``Hierarchical quantum circuit representations for neural architecture search,''
+\emph{npj Quantum Information}, 2023.
+\newblock \href{https://www.nature.com/articles/s41534-023-00747-z}{doi:10.1038/s41534-023-00747-z}.
+
+\bibitem{bqnas2024}
+``Balanced quantum neural architecture search,''
+\emph{Neurocomputing}, 2024.
+
+\bibitem{gaqaoa2023}
+``Genetic algorithm as a classical optimizer for QAOA,''
+\emph{Applied Soft Computing}, 2023.
+
+\bibitem{qaoaexp2025}
+``The QAOA can require exponential time to optimize linear functions,''
+in \emph{Proc.\ GECCO}, 2025.
+
+\bibitem{gaqaoapower2024}
+``GA-based QAOA for power networks,''
+Springer, 2024.
+
+\bibitem{gaqpso2024}
+``Particle swarm optimization for VQE (GAQPSO),''
+\emph{Physical Chemistry Chemical Physics}, 2024.
+
+\bibitem{gustafson2025}
+E.~Gustafson et al.,
+``Surrogate optimization of variational quantum circuits,''
+\emph{PNAS}, 2025.
+\newblock \href{https://www.pnas.org/doi/10.1073/pnas.2408530122}{doi:10.1073/pnas.2408530122}.
+
+\bibitem{qamoo2025}
+``Quantum approximate multi-objective optimization,''
+\emph{Nature Computational Science}, 2025.
+\newblock \href{https://www.nature.com/articles/s43588-025-00873-y}{doi:10.1038/s43588-025-00873-y}.
+
+\bibitem{measpqc2023}
+``MEAS-PQC: Multi-objective evolutionary algorithm search for parameterized quantum circuit architecture,''
+\emph{MDPI Entropy}, vol.~25, no.~1, 2023.
+
+\bibitem{zorn2025}
+M.~Zorn, J.~Stein, M.~Kolle et al.,
+``Quality diversity for variational quantum circuit optimization,''
+2025.
+
+\bibitem{qecea2025}
+``Engineering quantum error correction codes using evolutionary algorithms,''
+\emph{IEEE Trans.\ Quantum Engineering}, 2025.
+\newblock \href{https://arxiv.org/abs/2409.13017}{arXiv:2409.13017}.
+
+\bibitem{tcount2024}
+``T-count optimizing genetic algorithm for quantum state preparation,''
+2024.
+\newblock \href{https://arxiv.org/abs/2406.04004}{arXiv:2406.04004}.
+
+\bibitem{flowqnet2025}
+``FlowQ-Net: A generative framework for automated quantum circuit design,''
+2025.
+\newblock \href{https://arxiv.org/abs/2510.26688}{arXiv:2510.26688}.
+
+\bibitem{alphatensor2025}
+``AlphaTensor-Quantum,''
+\emph{Nature Machine Intelligence}, 2025.
+\newblock \href{https://www.nature.com/articles/s42256-025-01001-1}{doi:10.1038/s42256-025-01001-1}.
+
+\bibitem{qfusion2025}
+``Q-Fusion: Diffusion-based quantum circuit generation,''
+Penn State, 2025.
+
+\bibitem{rouillard2025}
+R.~Rouillard, B.~Lourens, and F.~Petruccione,
+``Automated quantum algorithm design via domain-specific language,''
+2025.
+\newblock \href{https://arxiv.org/abs/2503.08449}{arXiv:2503.08449}.
+
+\bibitem{qcoreview2024}
+``Comprehensive review of quantum circuit optimization,''
+\emph{MDPI Quantum Reports}, 2024.
+\newblock \href{https://arxiv.org/abs/2408.08941}{arXiv:2408.08941}.
+
+\bibitem{qcsynthesis2024}
+``Quantum circuit synthesis and compilation: Overview and prospects,''
+2024.
+\newblock \href{https://arxiv.org/abs/2407.00736}{arXiv:2407.00736}.
+
+\bibitem{aiqc2025}
+``Artificial intelligence for quantum computing,''
+\emph{Nature Communications}, 2025.
+\newblock \href{https://www.nature.com/articles/s41467-025-65836-3}{doi:10.1038/s41467-025-65836-3}.
+
+\bibitem{evolveqa2009}
+``A review of procedures to evolve quantum algorithms,''
+\emph{Genetic Programming and Evolvable Machines}, 2009.
+
+\end{thebibliography}
+
+\end{document}

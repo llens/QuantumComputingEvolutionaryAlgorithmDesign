@@ -13,3 +13,4 @@ class StudyConfig:
         "grover", "flip", "inverse", "fourier", "deutsch_jozsa", "bernstein_vazirani",
     ])
     base_seed: int = 42
+    qubit_counts: list[int] = field(default_factory=lambda: [3])

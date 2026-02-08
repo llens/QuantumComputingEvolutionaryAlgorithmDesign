@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "Quantum Computing Evolutionary Algorithm Design"
+message: >-
+  If you use this software, its results, or algorithms in a publication
+  or official document, please cite it using the metadata from this file.
+type: software
+authors:
+  - family-names: Snell
+    given-names: Thomas
+    orcid: "https://orcid.org/0009-0006-2197-835X"
+date-released: "2026-02-08"
+license: GPL-3.0-or-later
+url: "https://github.com/llens/QuantumComputingEvolutionaryAlgorithmDesign"
+preferred-citation:
+  type: article
+  title: "Multi-Objective and Quality-Diversity Optimization of Quantum Circuits via Statevector Simulation"
+  authors:
+    - family-names: Snell
+      given-names: Thomas
+  year: 2026
+  url: "https://github.com/llens/QuantumComputingEvolutionaryAlgorithmDesign"
